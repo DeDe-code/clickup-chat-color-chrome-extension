@@ -1,7 +1,11 @@
-<script setup></script>
+<script setup>
+import UmcExtentionView from './views/UmcExtentionView.vue'
+</script>
 
 <template>
-  <div>Hello from the app</div>
+  <main>
+    <UmcExtentionView />
+  </main>
 </template>
 
 <style scoped></style>
