@@ -1,17 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useColorStore } from '../stores/ColorStore.js'
 import ColorManager from '../components/ColorManager.vue'
 import ColorPreview from '../components/ColorPreview.vue'
 
-const backgroundColor = ref('')
-const textColor = ref('')
+const colorStore = useColorStore()
+const { backgroundColor, textColor } = storeToRefs(colorStore)
 
 const handleColorsChanged = ({ backgroundColor: bg, textColor: txt }) => {
-  backgroundColor.value = bg
-  textColor.value = txt
-
-  console.log(backgroundColor.value)
-  console.log(textColor.value)
+  colorStore.setColors(bg, txt)
 }
 </script>
 <template>
