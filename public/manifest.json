@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "ClickUp Message Highlighter",
+  "version": "1.0.0",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["https://app.clickup.com/*"],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://app.clickup.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
