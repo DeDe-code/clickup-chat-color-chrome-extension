@@ -1,0 +1,21 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Work Sans Variable', sans-serif;
+}
+body {
+  width: 30rem;
+  height: 30rem;
+}
+
+.extension-wrapper {
+  padding: 1rem;
+  color: #000;
+  background-color: #fff;
+  border: 1px solid red;
+}
+
+.vc-colorpicker {
+  background-color: #000 !important;
+}
