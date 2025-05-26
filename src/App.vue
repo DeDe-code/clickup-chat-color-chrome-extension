@@ -1,5 +1,7 @@
 <script setup>
 import UmcExtentionView from './views/UmcExtentionView.vue'
+import { useWatchColorPickerDropdown } from './composables/useColorPickerDropdown'
+useWatchColorPickerDropdown()
 </script>
 
 <template>

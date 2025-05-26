@@ -15,8 +15,11 @@ onMounted(() => {
   //   if (backgroundColor && textColor) {
   //     colorStore.setColors(backgroundColor, textColor)
   //   }
-  // isReady.value = true
+  //   isReady.value = true
   // })
+  const body = document.querySelector('body')
+  console.log(body)
+
   isReady.value = true
 })
 
@@ -38,22 +41,3 @@ const handleColorsChanged = ({ backgroundColor: bg, textColor: txt }) => {
     <div v-else class="loading-wrapper">loading...</div>
   </main>
 </template>
-
-<style scoped>
-/* .extension-wrapper {
-  max-width: 40%;
-  margin: 0 auto;
-  padding: 1rem;
-  color: #000;
-  background-color: #fff;
-  border: 1px solid red;
-} */
-.extension-tools-wrapper {
-  display: flex;
-  flex-direction: column;
-  row-gap: 2rem;
-}
-.extension-wrapper h1 {
-  text-transform: capitalize;
-}
-</style>

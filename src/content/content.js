@@ -1,7 +1,8 @@
 /* global chrome */
 
-let currentBackground = '#ffffff'
-let currentText = '#000000'
+let currentBackground = '#fe5722'
+let currentText = '#2097f3'
+let currentBorderRadius = '2rem'
 
 function applyStyles(bg, txt) {
   const items = document.querySelectorAll('cu-menu-list .has-unread')
@@ -12,6 +13,8 @@ function applyStyles(bg, txt) {
   items.forEach((el) => {
     el.style.backgroundColor = bg
     el.style.color = txt
+    el.style.borderRadius = currentBorderRadius
+    el.style.padding = '0.3rem'
   })
 
   icons.forEach((el) => {
@@ -21,8 +24,8 @@ function applyStyles(bg, txt) {
 
 // ✅ Initial load
 chrome.storage.local.get(['backgroundColor', 'textColor'], (result) => {
-  currentBackground = result.backgroundColor || '#ffffff'
-  currentText = result.textColor || '#000000'
+  currentBackground = result.backgroundColor || '#fe5722'
+  currentText = result.textColor || '#2097f3'
   applyStyles(currentBackground, currentText)
 })
 

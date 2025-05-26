@@ -4,18 +4,56 @@
   box-sizing: border-box;
   font-family: 'Work Sans Variable', sans-serif;
 }
+
 body {
-  width: 30rem;
-  height: 30rem;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 2rem;
+}
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 700;
 }
 
 .extension-wrapper {
   padding: 1rem;
   color: #000;
   background-color: #fff;
-  border: 1px solid red;
+}
+.extension-wrapper h1 {
+  font-size: 1rem;
+  text-transform: capitalize;
+}
+.extension-tools-wrapper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
 }
 
 .vc-colorpicker {
+  /* top: -6.5rem; */
+  /* top: 10rem; */
+  /* height: 10rem; */
+  background-color: transparent !important;
+}
+/* .vc-colorpicker--container {
+  height: 10rem !important;
+} */
+
+div[data-popper-placement='bottom'] {
+  /* Your styles here */
+  /* height: 10rem; */
+  top: 16rem !important;
+  left: 1rem !important;
+  transform: none !important;
   background-color: #000 !important;
+  border-radius: 2rem;
+}
+
+.color-picker-wrapper {
+  display: flex;
+  flex-direction: column;
+  row-gap: 0.5rem;
 }

@@ -4,7 +4,7 @@ import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
 
 const emit = defineEmits(['colorsChanged'])
-const { backgroundColor, textColor } = useColorPicker('#ffff', '#000', (colors) => {
+const { backgroundColor, textColor } = useColorPicker('#fe5722', '#2097f3', (colors) => {
   emit('colorsChanged', colors)
 })
 </script>
@@ -22,18 +22,12 @@ const { backgroundColor, textColor } = useColorPicker('#ffff', '#000', (colors) 
 </template>
 
 <style scoped>
-.color-picker-wrapper {
-  display: flex;
-  flex-direction: column;
-  row-gap: 1rem;
-}
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
 ::v-deep(.vc-color-wrap) {
   width: 100%;
   height: 2rem;
-  border: 1px solid red;
+  border-radius: 2rem;
+}
+#background-picker {
+  left: 20rem;
 }
 </style>
