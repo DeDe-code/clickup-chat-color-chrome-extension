@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "ClickUp Message Highlighter",
   "version": "1.0.0",
-  "permissions": ["storage", "scripting"],
+  "description": "Highlights unread messages in ClickUp.",
+  "permissions": ["storage"],
   "host_permissions": ["https://app.clickup.com/*"],
   "action": {
     "default_popup": "index.html"

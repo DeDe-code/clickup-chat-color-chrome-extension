@@ -1,11 +1,15 @@
 /* global chrome */
 
+// ✅ Safeguard: Exit if not on ClickUp
+if (location.hostname !== 'app.clickup.com') {
+  throw new Error('ClickUp Message Highlighter aborted: Not on app.clickup.com')
+}
+
 let currentBackground = '#fe5722'
 let currentText = '#2097f3'
 let currentBorderRadius = '2rem'
-let incidentWasUnread = false // 🆕 Track if "Incidents" has been styled
 
-function applyStyles(bg = currentBackground, txt = currentText) {
+function applyStandardUnreadStyles(bg = currentBackground, txt = currentText) {
   const items = document.querySelectorAll('.has-unread')
   const icons = document.querySelectorAll('.has-unread cu3-icon, .row-actions cu3-icon')
 
@@ -31,59 +35,49 @@ function resetStyles(el) {
   el.style.padding = ''
 }
 
-function findIncidentsChannel() {
-  const items = document.querySelectorAll('cu-sidebar-row-layout')
-  for (const el of items) {
-    const label = el.querySelector('.room-name__text')
-    if (label && label.textContent.trim() === 'Incidents') {
-      return el
-    }
-  }
-  return null
+function findClickUpCssVarElement() {
+  // Search for the first element that defines either variable
+  return (
+    [...document.querySelectorAll('*')].find(
+      (el) =>
+        getComputedStyle(el).getPropertyValue('--cu-content-primary') ||
+        getComputedStyle(el).getPropertyValue('--cu-background-primary'),
+    ) || document.documentElement
+  )
 }
 
-function onIncidentsClick(e) {
-  const el = e.currentTarget
-  resetStyles(el)
-  incidentWasUnread = false // ✅ Prevent reapplying until a new message arrives
-}
+// ✅ Save ClickUp CSS variable values to chrome.storage
+function saveClickUpCssVars() {
+  const el = findClickUpCssVarElement()
+  const cuContentPrimary = getComputedStyle(el).getPropertyValue('--cu-content-primary').trim()
+  const cuBackgroundPrimary = getComputedStyle(el)
+    .getPropertyValue('--cu-background-primary')
+    .trim()
+  console.log(`Saving ClickUp CSS vars from`, el, cuContentPrimary, cuBackgroundPrimary)
 
-function applyIncidentsPatch() {
-  const topItem = document.querySelector('cu-menu-list cu-sidebar-row-layout')
-  const allItems = document.querySelectorAll('cu-sidebar-row-layout')
-
-  let incidentChannel = null
-
-  allItems.forEach((el) => {
-    const label = el.querySelector('.room-name__text')
-    if (label && label.textContent.trim() === 'Incidents') {
-      incidentChannel = el
-    }
+  chrome.storage.local.set({
+    cuContentPrimary,
+    cuBackgroundPrimary,
   })
-
-  if (!incidentChannel) return
-
-  // Attach click reset (safe to repeat)
-  incidentChannel.removeEventListener('click', onIncidentsClick)
-  incidentChannel.addEventListener('click', onIncidentsClick)
-
-  if (incidentChannel === topItem && !incidentWasUnread) {
-    // If it's at the top and hasn't been styled yet → apply custom style
-    incidentChannel.style.transition = 'background-color 0.3s, color 0.3s'
-    incidentChannel.style.backgroundColor = currentBackground
-    incidentChannel.style.color = currentText
-    incidentChannel.style.borderRadius = currentBorderRadius
-    incidentChannel.style.padding = '0.3rem'
-    incidentWasUnread = true
-  }
 }
+
+// Save on initial load
+saveClickUpCssVars()
+
+// Optionally, observe for changes to these variables
+const cuVarObserver = new MutationObserver(() => {
+  saveClickUpCssVars()
+})
+cuVarObserver.observe(document.documentElement, {
+  attributes: true,
+  attributeFilter: ['style', 'class'],
+})
 
 // ✅ Initial load
 chrome.storage.local.get(['backgroundColor', 'textColor'], (result) => {
   currentBackground = result.backgroundColor || currentBackground
   currentText = result.textColor || currentText
-  applyStyles(currentBackground, currentText)
-  applyIncidentsPatch()
+  applyStandardUnreadStyles(currentBackground, currentText)
 })
 
 // ✅ Listen for color changes from popup
@@ -91,17 +85,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
     currentBackground = changes.backgroundColor?.newValue || currentBackground
     currentText = changes.textColor?.newValue || currentText
-    applyStyles(currentBackground, currentText)
-    applyIncidentsPatch()
+    applyStandardUnreadStyles(currentBackground, currentText)
   }
 })
 
-// ✅ MutationObserver for both normal unread logic + 'Incidents' patch
-const observer = new MutationObserver((mutations) => {
+// ✅ Observe changes to apply/remove styles dynamically
+const globalObserver = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     const el = mutation.target
-
-    // Reset style when a standard .has-unread class is removed
     if (
       mutation.type === 'attributes' &&
       mutation.attributeName === 'class' &&
@@ -111,11 +102,10 @@ const observer = new MutationObserver((mutations) => {
     }
   })
 
-  applyStyles()
-  applyIncidentsPatch()
+  applyStandardUnreadStyles()
 })
 
-observer.observe(document.body, {
+globalObserver.observe(document.body, {
   childList: true,
   subtree: true,
   attributes: true,
