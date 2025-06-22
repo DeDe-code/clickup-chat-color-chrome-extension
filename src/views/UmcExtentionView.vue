@@ -73,7 +73,14 @@ onMounted(() => {
       'umcTheme',
       'umcManualTheme',
     ],
-    ({ backgroundColor, textColor, cuContentPrimary: cuTxt, cuBackgroundPrimary: cuBg, umcTheme, umcManualTheme }) => {
+    ({
+      backgroundColor,
+      textColor,
+      cuContentPrimary: cuTxt,
+      cuBackgroundPrimary: cuBg,
+      umcTheme,
+      umcManualTheme,
+    }) => {
       if (backgroundColor && textColor) {
         colorStore.setColors(backgroundColor, textColor)
       }
