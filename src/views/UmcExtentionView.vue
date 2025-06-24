@@ -12,8 +12,8 @@ const { backgroundColor, textColor } = storeToRefs(colorStore)
 const isReady = ref(false)
 const cuContentPrimary = ref('#2097f3')
 const cuBackgroundPrimary = ref('#fe5722')
-const theme = ref('system') // 'system', 'light', 'dark', 'manual'
-const manualTheme = ref('light') // 'light' or 'dark'
+const theme = ref('system') // 'system', 'light', 'dark'
+// const manualTheme = ref('light') // 'light' or 'dark'
 
 // Resolve a CSS variable (e.g. 'var(--cu-content-primary)') to real color
 function resolveCssVariable(colorValue) {
@@ -30,14 +30,26 @@ function resolveCssVariable(colorValue) {
 }
 
 function applyTheme(newTheme) {
+  let target = document.documentElement
+  document.body.removeAttribute('data-theme')
   if (newTheme === 'system') {
     const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-  } else if (newTheme === 'manual') {
-    document.documentElement.setAttribute('data-theme', manualTheme.value)
+    target.setAttribute('data-theme', isDark ? 'dark' : 'light')
+    // Listen for system changes only in system mode
+    setupSystemThemeWatcher()
   } else {
-    document.documentElement.setAttribute('data-theme', newTheme)
+    target.setAttribute('data-theme', newTheme)
+    // Remove system watcher if not in system mode
+    if (mediaQueryList) {
+      mediaQueryList.removeEventListener('change', handleSystemThemeChange)
+      mediaQueryList = null
+    }
   }
+  // Log out the element and its computed background and color
+  const body = document.body
+  const bg = getComputedStyle(body).backgroundColor
+  const color = getComputedStyle(body).color
+  console.log('Theme applied to:', target, 'Body bg:', bg, 'Body color:', color)
 }
 
 // Watch for browser theme changes if theme is 'system'
@@ -46,10 +58,8 @@ function setupSystemThemeWatcher() {
   if (mediaQueryList) {
     mediaQueryList.removeEventListener('change', handleSystemThemeChange)
   }
-  if (theme.value === 'system') {
-    mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQueryList.addEventListener('change', handleSystemThemeChange)
-  }
+  mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)')
+  mediaQueryList.addEventListener('change', handleSystemThemeChange)
 }
 function handleSystemThemeChange(e) {
   if (theme.value === 'system') {
@@ -58,12 +68,15 @@ function handleSystemThemeChange(e) {
 }
 
 watch(theme, (newTheme) => {
+  console.log('Theme changed to:', newTheme)
   applyTheme(newTheme)
-  setupSystemThemeWatcher()
   chrome.storage.local.set({ umcTheme: newTheme })
 })
 
 onMounted(() => {
+  // Default: inherit system theme
+  theme.value = 'system'
+  applyTheme('system')
   chrome.storage.local.get(
     [
       'backgroundColor',
@@ -79,21 +92,16 @@ onMounted(() => {
       cuContentPrimary: cuTxt,
       cuBackgroundPrimary: cuBg,
       umcTheme,
-      umcManualTheme,
+      // umcManualTheme,
     }) => {
       if (backgroundColor && textColor) {
         colorStore.setColors(backgroundColor, textColor)
       }
       if (cuTxt) cuContentPrimary.value = cuTxt
       if (cuBg) cuBackgroundPrimary.value = cuBg
-      if (umcTheme) {
+      if (umcTheme && umcTheme !== 'system') {
         theme.value = umcTheme
-        if (umcTheme === 'manual' && umcManualTheme) {
-          manualTheme.value = umcManualTheme
-        }
         applyTheme(umcTheme)
-      } else {
-        applyTheme('system')
       }
       setupSystemThemeWatcher()
       isReady.value = true
@@ -101,12 +109,50 @@ onMounted(() => {
   )
 })
 
+// Send message directly to the content script
+function sendMessageToContentScript(bg, txt) {
+  // Get all active tabs with the ClickUp URL
+  chrome.tabs.query({ url: 'https://app.clickup.com/*' }, (tabs) => {
+    if (tabs.length === 0) {
+      console.log('No ClickUp tabs found')
+      return
+    }
+
+    // Send message to all ClickUp tabs
+    tabs.forEach((tab) => {
+      chrome.tabs.sendMessage(
+        tab.id,
+        {
+          action: 'updateColors',
+          backgroundColor: bg,
+          textColor: txt,
+        },
+        (response) => {
+          // Handle the response from the content script
+          if (chrome.runtime.lastError) {
+            console.error('Error sending message:', chrome.runtime.lastError)
+            return
+          }
+
+          if (response && response.success) {
+            console.log('Colors updated in ClickUp tab:', tab.id)
+          }
+        },
+      )
+    })
+  })
+}
+
 const handleColorsChanged = ({ backgroundColor: bg, textColor: txt }) => {
   colorStore.setColors(bg, txt)
+  // Store in local storage for persistence
   chrome.storage.local.set({
     backgroundColor: bg,
     textColor: txt,
   })
+
+  // Send direct message to content script for immediate update
+  sendMessageToContentScript(bg, txt)
 }
 
 const previewBackground = computed(() => resolveCssVariable(backgroundColor.value))
@@ -114,15 +160,13 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 </script>
 
 <template>
-  <main
-    class="extension-wrapper min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center"
-  >
+  <main class="extension-wrapper min-h-screen flex flex-col items-center justify-center">
     <div class="w-full flex justify-end mb-2">
       <div class="flex gap-2 items-center">
         <select
           v-model="theme"
           @change="applyTheme(theme)"
-          class="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 text-xs font-semibold shadow hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none"
+          class="px-3 py-1 rounded-lg border text-xs font-semibold shadow transition-colors focus:outline-none theme-select"
         >
           <option value="system">🖥️ System</option>
           <option value="light">🌞 Light</option>
@@ -142,5 +186,13 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 </template>
 
 <style scoped>
-/* All handled by Tailwind */
+.theme-select {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border-color: var(--text-color);
+}
+
+.theme-select:hover {
+  opacity: 0.9;
+}
 </style>

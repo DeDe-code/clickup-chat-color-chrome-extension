@@ -52,15 +52,29 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
 
 <template>
   <div class="color-picker-wrapper flex flex-col gap-4">
-    <div class="checkbox-wrapper flex flex-col gap-2 mb-4">
-      <label class="flex items-center gap-2 text-sm font-medium">
-        <input type="checkbox" v-model="useClickUpTextColor" class="accent-blue-500" />
-        Use ClickUp theme colors (var(--cu-content-primary))
-      </label>
-      <label class="flex items-center gap-2 text-sm font-medium">
-        <input type="checkbox" v-model="useClickUpBackgroundColor" class="accent-blue-500" />
-        Use ClickUp background color (var(--cu-background-primary))
-      </label>
+    <div class="checkbox-wrapper flex flex-col gap-3 mb-4 w-full">
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="cu-theme"
+          v-model="useClickUpTextColor"
+          class="accent-blue-500"
+        />
+        <label for="cu-theme" class="select-none cursor-pointer flex items-center h-full">
+          Use ClickUp theme colors
+        </label>
+      </div>
+      <div class="flex items-center gap-2 w-full h-12">
+        <input
+          type="checkbox"
+          id="cu-bg"
+          v-model="useClickUpBackgroundColor"
+          class="accent-blue-500"
+        />
+        <label for="cu-bg" class="select-none cursor-pointer flex items-center h-full">
+          Use ClickUp background color
+        </label>
+      </div>
     </div>
 
     <div class="background-picker-wrapper flex flex-col gap-1">

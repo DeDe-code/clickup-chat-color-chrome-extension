@@ -3,7 +3,7 @@
   "name": "ClickUp Message Highlighter",
   "version": "1.0.0",
   "description": "Highlights unread messages in ClickUp.",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab", "tabs"],
   "host_permissions": ["https://app.clickup.com/*"],
   "action": {
     "default_popup": "index.html"

@@ -25,6 +25,8 @@ function applyStandardUnreadStyles(bg = currentBackground, txt = currentText) {
     el.style.transition = 'color 0.3s'
     el.style.color = txt
   })
+
+  console.log(`ClickUp Message Highlighter: Applied styles - BG: ${bg}, Text: ${txt}`)
 }
 
 function resetStyles(el) {
@@ -86,6 +88,23 @@ chrome.storage.onChanged.addListener((changes, area) => {
     currentBackground = changes.backgroundColor?.newValue || currentBackground
     currentText = changes.textColor?.newValue || currentText
     applyStandardUnreadStyles(currentBackground, currentText)
+  }
+})
+
+// ✅ Listen for direct messages from the popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log('Content script received message:', message)
+
+  if (message.action === 'updateColors') {
+    currentBackground = message.backgroundColor || currentBackground
+    currentText = message.textColor || currentText
+
+    // Immediately apply the new styles
+    applyStandardUnreadStyles(currentBackground, currentText)
+
+    // Send confirmation back to popup
+    sendResponse({ success: true, message: 'Colors updated successfully' })
+    return true // Keep the message channel open for the async response
   }
 })
 
