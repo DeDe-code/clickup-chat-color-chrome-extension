@@ -3,12 +3,9 @@ export default {
   // Global options:
   sourceDir: './dist',
   artifactsDir: './web-ext-artifacts',
-  overwriteDest: true,
 
   // Command options:
-  build: {
-    overwriteDest: true,
-  },
+  build: {},
   run: {
     startUrl: ['https://app.clickup.com/'],
     browserConsole: true,

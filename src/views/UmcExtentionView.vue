@@ -13,7 +13,30 @@ const isReady = ref(false)
 const cuContentPrimary = ref('#2097f3')
 const cuBackgroundPrimary = ref('#fe5722')
 const theme = ref('system') // 'system', 'light', 'dark'
+
+// Load theme preference from Chrome storage
+chrome.storage.local.get(['theme'], (result) => {
+  if (result.theme) {
+    theme.value = result.theme
+    applyTheme(theme.value)
+  }
+})
+
+// Watch for theme changes and save to Chrome storage
+watch(theme, (newTheme) => {
+  chrome.storage.local.set({ theme: newTheme })
+})
 // const manualTheme = ref('light') // 'light' or 'dark'
+
+// Load ClickUp theme variables from storage
+chrome.storage.local.get(['cuContentPrimary', 'cuBackgroundPrimary'], (result) => {
+  if (result.cuContentPrimary) {
+    cuContentPrimary.value = result.cuContentPrimary
+  }
+  if (result.cuBackgroundPrimary) {
+    cuBackgroundPrimary.value = result.cuBackgroundPrimary
+  }
+})
 
 // Resolve a CSS variable (e.g. 'var(--cu-content-primary)') to real color
 function resolveCssVariable(colorValue) {
@@ -182,7 +205,7 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 
 <style scoped>
 .extension-wrapper {
-  padding: 1rem;
+  width: 100%;
 }
 .extension-wrapper h1 {
   margin: 1rem 0 0.4rem 0;

@@ -18,10 +18,17 @@
 
 html,
 body {
+  border: 1px solid green;
+  background-color: green;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
   width: 320px; /* Default extension width */
   height: auto; /* Allow height to adjust to content */
   min-height: 320px; /* Minimum height */
+  padding: 1rem;
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
   font-family: var(--font-family-base);
@@ -32,11 +39,8 @@ body {
   overflow: visible !important; /* Allow content to overflow */
 }
 
-/* When color picker is open, ensure there's enough space */
-body.color-picker-open,
-html.color-picker-open {
-  width: 700px !important; /* Wide enough for both extension and color picker */
-  overflow: visible !important;
+#app {
+  width: 100%;
 }
 
 /* Additional theme-based styling for the select element */
@@ -52,34 +56,39 @@ html.color-picker-open {
   border-color: #d1d5db !important;
 }
 
-/* Basic vue-color-input styling */
-/* .v-color-input {
-  width: 100%;
-  border-radius: 0.3rem;
-}
-.v-color-input__control {
-  border-color: var(--border-color) !important;
-  height: 2rem !important;
-} */
-
 /* Theme-specific styling for color picker */
-:root[data-theme='dark'] .v-color-input__control {
+:root[data-theme='dark'] .color-input__popup {
+  color: #fff !important;
   background-color: #333 !important;
-  border-color: #555 !important;
 }
 
-:root[data-theme='dark'] .v-color-input__popover {
-  background-color: #333 !important;
-  border-color: #555 !important;
-  color: white !important;
+:root[data-theme='light'] .v-color-input__popup {
+  color: #000;
+  background-color: #ffff !important;
 }
 
-:root[data-theme='light'] .v-color-input__control {
-  background-color: #ffffff !important;
-  border-color: #dee2e6 !important;
+.color-input__popup,
+.color-input__popup--bottom,
+.color-input__popup--center,
+.color-input__popup--bottom-center {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  /* border: 1px solid var(--border-colo); */
 }
-
-:root[data-theme='light'] .v-color-input__popover {
-  background-color: white !important;
-  border-color: #dee2e6 !important;
+.color-input__popup {
+  position: absolute;
+  z-index: 9999;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
+  box-shadow: none !important;
+  -webkit-user-select: none;
+  user-select: none;
+  color: #0f0f0f;
+  --popup-offset: 10px;
 }

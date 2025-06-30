@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
           content: resolve('src/content/content.js'),
         },
         output: {
-          entryFileNames: '[name].js',
+          entryFileNames: '[name].js', // No hash for entry files
           chunkFileNames: 'chunks/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',
           manualChunks: {

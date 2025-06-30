@@ -36,6 +36,14 @@ chrome.storage.local.get(['useClickUpTextColor', 'useClickUpBackgroundColor'], (
 })
 
 const { backgroundColor, textColor } = useColorPicker('#fe5722', '#2097f3', (colors) => {
+  // Save the effective colors (what's actually used) to Chrome storage
+  chrome.storage.local.set({
+    effectiveBackgroundColor: useClickUpBackgroundColor.value
+      ? 'var(--cu-background-primary)'
+      : colors.backgroundColor,
+    effectiveTextColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : colors.textColor,
+  })
+
   emit('colorsChanged', {
     backgroundColor: useClickUpBackgroundColor.value
       ? 'var(--cu-background-primary)'
@@ -46,16 +54,25 @@ const { backgroundColor, textColor } = useColorPicker('#fe5722', '#2097f3', (col
 
 // Watch for changes and emit updated values
 watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
+  // Calculate the effective colors based on checkbox states
+  const effectiveBackgroundColor = useClickUpBackgroundColor.value
+    ? 'var(--cu-background-primary)'
+    : backgroundColor.value
+  const effectiveTextColor = useClickUpTextColor.value
+    ? 'var(--cu-content-primary)'
+    : textColor.value
+
+  // Save all settings to Chrome storage
   chrome.storage.local.set({
     useClickUpTextColor: useClickUpTextColor.value,
     useClickUpBackgroundColor: useClickUpBackgroundColor.value,
+    effectiveBackgroundColor: effectiveBackgroundColor,
+    effectiveTextColor: effectiveTextColor,
   })
 
   emit('colorsChanged', {
-    backgroundColor: useClickUpBackgroundColor.value
-      ? 'var(--cu-background-primary)'
-      : backgroundColor.value,
-    textColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : textColor.value,
+    backgroundColor: effectiveBackgroundColor,
+    textColor: effectiveTextColor,
   })
 })
 </script>
@@ -144,40 +161,10 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   gap: 0.5rem;
 }
 
-/* Style the color input component */
-:deep(.v-color-input) {
-  width: 100%;
-  margin: 0;
-  border-radius: 0.3rem;
-}
-
 :deep(.color-input__box) {
   width: 100%;
-  border-radius: 0;
+  border-radius: 0.3rem;
 }
-:deep(.color-input__control) {
-  width: 100% !important;
-}
-:deep(
-  .color-input__popup,
-  .color-input__popup--bottom,
-  .color-input__popup--center,
-  .color-input__popup--bottom-center
-) {
-  /* Override the inline style properties */
-  --box-width: 152px !important;
-  --box-height: 40px !important;
-  top: 100rem !important;
-  position: fixed !important;
-  z-index: 9999 !important;
-  margin-top: 0 !important;
-}
-
-/* :deep(.color-input__control) {
-  width: 100%;
-  height: 52px !important;
-  border-radius: 4px;
-} */
 
 /* Theme-specific styling */
 :deep([data-theme='dark'] .v-color-input__control) {

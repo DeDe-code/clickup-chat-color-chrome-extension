@@ -35,7 +35,7 @@ const previewText = ref('Unread message color')
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.5rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-color, #dee2e6);
   border-radius: 0.3rem;
 }
 .preview-text-container {

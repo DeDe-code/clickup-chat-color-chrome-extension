@@ -5,9 +5,23 @@ if (location.hostname !== 'app.clickup.com') {
   throw new Error('ClickUp Message Highlighter aborted: Not on app.clickup.com')
 }
 
+// Default colors that will be overridden by storage values if available
 let currentBackground = '#fe5722'
 let currentText = '#2097f3'
 let currentBorderRadius = '2rem'
+
+// Load saved colors from Chrome storage immediately
+chrome.storage.local.get(['effectiveBackgroundColor', 'effectiveTextColor'], (result) => {
+  if (result.effectiveBackgroundColor) {
+    currentBackground = result.effectiveBackgroundColor
+  }
+  if (result.effectiveTextColor) {
+    currentText = result.effectiveTextColor
+  }
+
+  // Apply styles immediately after loading from storage
+  applyStandardUnreadStyles(currentBackground, currentText)
+})
 
 function applyStandardUnreadStyles(bg = currentBackground, txt = currentText) {
   const items = document.querySelectorAll('.has-unread')
