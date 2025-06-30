@@ -1,24 +1,42 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 :root[data-theme='light'] {
   --bg-color: #ffffff;
   --text-color: #000000;
+  --border-color: #dee2e6;
 }
 
 :root[data-theme='dark'] {
   --bg-color: #1e1e1e;
   --text-color: #ffffff;
+  --border-color: #4a4a4a;
 }
 
 html,
 body {
-  width: 20rem;
-  height: 20rem;
+  position: relative;
+  width: 320px; /* Default extension width */
+  height: auto; /* Allow height to adjust to content */
+  min-height: 320px; /* Minimum height */
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
-  font-family: 'Work Sans Variable', sans-serif;
+  font-family: var(--font-family-base);
   border: none;
   transition:
     background-color 0.3s,
     color 0.3s;
+  overflow: visible !important; /* Allow content to overflow */
+}
+
+/* When color picker is open, ensure there's enough space */
+body.color-picker-open,
+html.color-picker-open {
+  width: 700px !important; /* Wide enough for both extension and color picker */
+  overflow: visible !important;
 }
 
 /* Additional theme-based styling for the select element */
@@ -34,42 +52,34 @@ body {
   border-color: #d1d5db !important;
 }
 
-.extension-wrapper {
-  padding: 1rem;
+/* Basic vue-color-input styling */
+/* .v-color-input {
+  width: 100%;
+  border-radius: 0.3rem;
 }
-
-.extension-wrapper h1 {
-  font-size: 1rem;
-  text-transform: capitalize;
-}
-.extension-tools-wrapper {
-  display: flex;
-  flex-direction: column;
-  row-gap: 1rem;
-}
-
-.vc-colorpicker {
-  /* top: -6.5rem; */
-  /* top: 10rem; */
-  /* height: 10rem; */
-  background-color: transparent !important;
-}
-/* .vc-colorpicker--container {
-  height: 10rem !important;
+.v-color-input__control {
+  border-color: var(--border-color) !important;
+  height: 2rem !important;
 } */
 
-div[data-popper-placement='bottom'] {
-  /* Your styles here */
-  /* height: 10rem; */
-  top: 16rem !important;
-  left: 1rem !important;
-  transform: none !important;
-  background-color: #000 !important;
-  border-radius: 2rem;
+/* Theme-specific styling for color picker */
+:root[data-theme='dark'] .v-color-input__control {
+  background-color: #333 !important;
+  border-color: #555 !important;
 }
 
-.color-picker-wrapper {
-  display: flex;
-  flex-direction: column;
-  row-gap: 0.5rem;
+:root[data-theme='dark'] .v-color-input__popover {
+  background-color: #333 !important;
+  border-color: #555 !important;
+  color: white !important;
+}
+
+:root[data-theme='light'] .v-color-input__control {
+  background-color: #ffffff !important;
+  border-color: #dee2e6 !important;
+}
+
+:root[data-theme='light'] .v-color-input__popover {
+  background-color: white !important;
+  border-color: #dee2e6 !important;
 }

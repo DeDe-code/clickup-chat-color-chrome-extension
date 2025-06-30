@@ -160,22 +160,17 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 </script>
 
 <template>
-  <main class="extension-wrapper min-h-screen flex flex-col items-center justify-center">
-    <div class="w-full flex justify-end mb-2">
-      <div class="flex gap-2 items-center">
-        <select
-          v-model="theme"
-          @change="applyTheme(theme)"
-          class="px-3 py-1 rounded-lg border text-xs font-semibold shadow transition-colors focus:outline-none theme-select"
-        >
-          <option value="system">🖥️ System</option>
-          <option value="light">🌞 Light</option>
-          <option value="dark">🌙 Dark</option>
-        </select>
-      </div>
+  <main class="extension-wrapper">
+    <div class="theme-selector-wrapper">
+      <label for="theme-select">Themes</label>
+      <select id="theme-select" v-model="theme" @change="applyTheme(theme)" class="theme-selector">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
     </div>
-    <div v-if="isReady" class="extension-tools-wrapper w-full max-w-md flex flex-col gap-6">
-      <h1 class="text-xl font-bold text-center mb-2">Choose your colors</h1>
+    <h1>Choose your colors</h1>
+    <div v-if="isReady" class="color-picker-wrapper">
       <ColorManager @colorsChanged="handleColorsChanged" />
       <ColorPreview :backgroundColor="previewBackground" :textColor="previewText" />
     </div>
@@ -186,13 +181,37 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 </template>
 
 <style scoped>
-.theme-select {
+.extension-wrapper {
+  padding: 1rem;
+}
+.extension-wrapper h1 {
+  margin: 1rem 0 0.4rem 0;
+  font-size: 1.2rem;
+}
+.theme-selector-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
+}
+.theme-selector {
+  padding: 0.4rem;
   background-color: var(--bg-color);
   color: var(--text-color);
-  border-color: var(--text-color);
+  border-color: var(--border-color);
+  border-radius: 0.3rem;
 }
 
-.theme-select:hover {
+.theme-selector:hover {
   opacity: 0.9;
+}
+.color-picker-wrapper {
+  padding: 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
 }
 </style>

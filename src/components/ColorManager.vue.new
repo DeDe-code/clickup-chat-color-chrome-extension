@@ -1,6 +1,6 @@
 <script setup>
 /* global chrome */
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useColorPicker } from '../composables/useColorPicker.js'
 import ColorInput from 'vue-color-input'
 // Import the CSS directly from node_modules
@@ -11,16 +11,81 @@ const emit = defineEmits(['colorsChanged'])
 const useClickUpTextColor = ref(false)
 const useClickUpBackgroundColor = ref(false)
 
-// Simple function to handle color picker open/close
+// Track color picker popover state
+const isColorPickerOpen = ref(false)
+let colorPickerObserver = null;
+
+// Function to handle color picker open/close
+function handleColorPickerToggle(isOpen) {
+  isColorPickerOpen.value = isOpen
+
+  if (isOpen) {
+    document.body.classList.add('color-picker-open')
+    document.documentElement.classList.add('color-picker-open')
+  } else {
+    document.body.classList.remove('color-picker-open')
+    document.documentElement.classList.remove('color-picker-open')
+  }
+}
+
+// Function to handle debug button click
+function handleDebugButtonClick() {
+  console.log('Debug button clicked - showing color picker popup state')
+  const popovers = document.querySelectorAll('.v-color-input__popover')
+  console.log('Found', popovers.length, 'color picker popovers')
+  
+  // Toggle the color picker open state
+  if (!isColorPickerOpen.value) {
+    handleColorPickerToggle(true)
+  }
+}
+
+// Watch for DOM changes to detect when color picker is opened/closed
+function setupColorPickerObserver() {
+  const observer = new MutationObserver((mutations) => {
+    // Check for v-color-input__popover elements being added or removed
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        // Check for added nodes that are color picker popovers
+        const popovers = document.querySelectorAll('.v-color-input__popover')
+        const isVisible = popovers.length > 0;
+        handleColorPickerToggle(isVisible)
+      }
+    }
+  });
+
+  // Observe the entire document for color picker elements
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  return observer;
+}
+
+// Methods to handle color picker popover events
 function handlePopoverOpen() {
-  document.body.classList.add('color-picker-open')
-  document.documentElement.classList.add('color-picker-open')
+  handleColorPickerToggle(true)
 }
 
 function handlePopoverClose() {
+  handleColorPickerToggle(false)
+}
+
+onMounted(() => {
+  // Setup color picker observer
+  colorPickerObserver = setupColorPickerObserver()
+})
+
+onUnmounted(() => {
+  if (colorPickerObserver) {
+    colorPickerObserver.disconnect()
+  }
+
+  // Remove classes when component is destroyed
   document.body.classList.remove('color-picker-open')
   document.documentElement.classList.remove('color-picker-open')
-}
+})
 
 // Load saved checkbox states
 chrome.storage.local.get(['useClickUpTextColor', 'useClickUpBackgroundColor'], (result) => {
@@ -74,7 +139,14 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
     </div>
 
     <div class="color-picker-wrapper">
-      <!-- No debug button in the basic implementation -->
+      <!-- Debug button to help with visibility issues -->
+      <button
+        class="debug-button"
+        type="button"
+        @click="handleDebugButtonClick"
+      >
+        Show Color Picker Status
+      </button>
 
       <div class="bg-picker-wrapper">
         <label for="background-picker">Background</label>
@@ -151,33 +223,16 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   border-radius: 0.3rem;
 }
 
-:deep(.color-input__box) {
+:deep(.v-color-input__control) {
   width: 100%;
-  border-radius: 0;
-}
-:deep(.color-input__control) {
-  width: 100% !important;
-}
-:deep(
-  .color-input__popup,
-  .color-input__popup--bottom,
-  .color-input__popup--center,
-  .color-input__popup--bottom-center
-) {
-  /* Override the inline style properties */
-  --box-width: 152px !important;
-  --box-height: 40px !important;
-  top: 100rem !important;
-  position: fixed !important;
-  z-index: 9999 !important;
-  margin-top: 0 !important;
+  height: 32px !important;
+  border-radius: 4px;
+  transition: all 0.2s;
 }
 
-/* :deep(.color-input__control) {
-  width: 100%;
-  height: 52px !important;
-  border-radius: 4px;
-} */
+:deep(.v-color-input__control:hover) {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
 /* Theme-specific styling */
 :deep([data-theme='dark'] .v-color-input__control) {
@@ -188,5 +243,21 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
 :deep([data-theme='light'] .v-color-input__control) {
   background-color: white !important;
   border-color: #dee2e6 !important;
+}
+
+/* Debug button styling */
+.debug-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.debug-button:hover {
+  background-color: #357abd;
 }
 </style>

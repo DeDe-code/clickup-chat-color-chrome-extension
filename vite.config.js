@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
           assetFileNames: 'assets/[name]-[hash][extname]',
           manualChunks: {
             vue: ['vue', 'vue-router', 'pinia'],
-            vendor: ['vue3-colorpicker', 'axios'],
+            vendor: ['vue-color-input', 'axios'],
           },
         },
       },
