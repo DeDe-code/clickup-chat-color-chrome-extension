@@ -56,15 +56,36 @@ body {
   border-color: #d1d5db !important;
 }
 
+/* Theme-specific styling for color picker wrapper pseudo-element */
+:root[data-theme='dark'] .color-picker-wrapper::before {
+  background-color: #1e1e1e !important;
+  color: #ffffff !important;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+:root[data-theme='light'] .color-picker-wrapper::before {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
 /* Theme-specific styling for color picker */
 :root[data-theme='dark'] .color-input__popup {
   color: #fff !important;
-  background-color: #333 !important;
+  /* background-color: #333 !important; */
 }
 
-:root[data-theme='light'] .v-color-input__popup {
+:root[data-theme='light'] .color-input__popup {
   color: #000;
-  background-color: #ffff !important;
+  /* background-color: #ffff !important; */
+}
+
+.color-input__box--disabled {
+  opacity: 0.5;
 }
 
 .color-input__popup,
@@ -91,4 +112,7 @@ body {
   user-select: none;
   color: #0f0f0f;
   --popup-offset: 10px;
+}
+.color-input__text-inputs-area {
+  text-transform: uppercase;
 }

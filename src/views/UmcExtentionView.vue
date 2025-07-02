@@ -185,14 +185,14 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 <template>
   <main class="extension-wrapper">
     <div class="theme-selector-wrapper">
-      <label for="theme-select">Themes</label>
+      <label for="theme-select">Appearance</label>
       <select id="theme-select" v-model="theme" @change="applyTheme(theme)" class="theme-selector">
         <option value="system">System</option>
         <option value="light">Light</option>
         <option value="dark">Dark</option>
       </select>
     </div>
-    <h1>Choose your colors</h1>
+    <!-- <h1>Choose your colors</h1> -->
     <div v-if="isReady" class="color-picker-wrapper">
       <ColorManager @colorsChanged="handleColorsChanged" />
       <ColorPreview :backgroundColor="previewBackground" :textColor="previewText" />
@@ -217,12 +217,13 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
   justify-content: space-between;
   width: 100%;
   margin: 0 auto;
-  padding: 0.6rem;
+  padding-block: 0.6rem;
+  padding-inline: 1.4rem;
   border: 1px solid var(--border-color);
   border-radius: 0.3rem;
 }
 .theme-selector {
-  padding: 0.4rem;
+  padding-block: 0.4rem;
   background-color: var(--bg-color);
   color: var(--text-color);
   border-color: var(--border-color);
@@ -233,8 +234,25 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
   opacity: 0.9;
 }
 .color-picker-wrapper {
-  padding: 0.6rem;
+  position: relative;
+  margin-top: 1.5rem;
+  padding: 1.4rem;
   border: 1px solid var(--border-color);
   border-radius: 0.3rem;
+}
+.color-picker-wrapper::before {
+  content: 'Choose your colors';
+  position: absolute;
+  width: 12rem;
+  height: 1.7rem;
+  top: -1rem;
+  left: 1rem;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  background-color: #1e1e1e;
 }
 </style>

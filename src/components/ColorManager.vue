@@ -82,11 +82,11 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
     <div class="clickup-theme-toggle">
       <div class="clickup-text-toggle">
         <input type="checkbox" id="cu-theme" v-model="useClickUpTextColor" />
-        <label for="cu-theme"> Use ClickUp theme colors </label>
+        <label for="cu-theme"> Use ClickUp primary content color </label>
       </div>
       <div class="clickup-bg-toggle">
         <input type="checkbox" id="cu-bg" v-model="useClickUpBackgroundColor" />
-        <label for="cu-bg"> Use ClickUp background color </label>
+        <label for="cu-bg"> Use ClickUp primary background color </label>
       </div>
     </div>
 
@@ -134,7 +134,7 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.4rem;
+  padding: 0.6rem;
   border: 1px solid var(--border-color, #dee2e6);
   border-radius: 0.3rem;
 }
@@ -143,13 +143,14 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.6rem;
 }
 
 .color-picker-wrapper {
   display: flex;
   flex-direction: column;
   row-gap: 0.5rem;
-  padding: 0.4rem;
+  padding: 0.6rem;
   border: 1px solid var(--border-color, #dee2e6);
   border-radius: 0.3rem;
 }
