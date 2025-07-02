@@ -126,55 +126,55 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
 
 <style scoped>
 .color-manager {
-  display: flex;
-  flex-direction: column;
-  row-gap: 1rem;
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  row-gap: var(--gap-base);
 }
 .clickup-theme-toggle {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.6rem;
-  border: 1px solid var(--border-color, #dee2e6);
-  border-radius: 0.3rem;
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  gap: var(--gap-sm);
+  padding: var(--spacing-md-lg);
+  border: var(--border-default);
+  border-radius: var(--border-radius-sm);
 }
 .clickup-text-toggle,
 .clickup-bg-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.6rem;
+  display: var(--flex-center);
+  align-items: var(--align-center);
+  gap: var(--gap-sm);
+  font-size: var(--font-size-sm);
 }
 
 .color-picker-wrapper {
-  display: flex;
-  flex-direction: column;
-  row-gap: 0.5rem;
-  padding: 0.6rem;
-  border: 1px solid var(--border-color, #dee2e6);
-  border-radius: 0.3rem;
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  row-gap: var(--gap-sm);
+  padding: var(--spacing-md-lg);
+  border: var(--border-default);
+  border-radius: var(--border-radius-sm);
 }
 .bg-picker-wrapper,
 .text-picker-wrapper {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  width: var(--full-width);
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  gap: var(--gap-sm);
 }
 
 :deep(.color-input__box) {
-  width: 100%;
-  border-radius: 0.3rem;
+  width: var(--full-width);
+  border-radius: var(--border-radius-sm);
 }
 
 /* Theme-specific styling */
 :deep([data-theme='dark'] .v-color-input__control) {
-  background-color: #333 !important;
-  border-color: #555 !important;
+  background-color: var(--color-dark-alt) !important;
+  border-color: var(--color-border-dark) !important;
 }
 
 :deep([data-theme='light'] .v-color-input__control) {
-  background-color: white !important;
-  border-color: #dee2e6 !important;
+  background-color: var(--color-white) !important;
+  border-color: var(--color-light-gray) !important;
 }
 </style>

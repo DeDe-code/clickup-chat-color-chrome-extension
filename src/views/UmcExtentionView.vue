@@ -205,54 +205,54 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
 
 <style scoped>
 .extension-wrapper {
-  width: 100%;
+  width: var(--full-width);
 }
 .extension-wrapper h1 {
-  margin: 1rem 0 0.4rem 0;
-  font-size: 1.2rem;
+  margin: var(--spacing-base) 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-base);
 }
 .theme-selector-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  display: var(--flex-center);
+  align-items: var(--align-center);
+  justify-content: var(--justify-between);
+  width: var(--full-width);
   margin: 0 auto;
-  padding-block: 0.6rem;
-  padding-inline: 1.4rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  padding-block: var(--spacing-md-lg);
+  padding-inline: var(--spacing-lg);
+  border: var(--border-default);
+  border-radius: var(--border-radius-sm);
 }
 .theme-selector {
-  padding-block: 0.4rem;
+  padding-block: var(--spacing-sm);
   background-color: var(--bg-color);
   color: var(--text-color);
   border-color: var(--border-color);
-  border-radius: 0.3rem;
+  border-radius: var(--border-radius-sm);
 }
 
 .theme-selector:hover {
-  opacity: 0.9;
+  opacity: var(--hover-opacity);
 }
 .color-picker-wrapper {
   position: relative;
-  margin-top: 1.5rem;
-  padding: 1.4rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  border: var(--border-default);
+  border-radius: var(--border-radius-sm);
 }
 .color-picker-wrapper::before {
   content: 'Choose your colors';
   position: absolute;
-  width: 12rem;
-  height: 1.7rem;
-  top: -1rem;
-  left: 1rem;
+  width: var(--width-12);
+  height: var(--spacing-2xl);
+  top: calc(var(--spacing-base) * -1);
+  left: var(--spacing-base);
   right: 0;
   bottom: 0;
   z-index: 10;
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   text-align: center;
-  background-color: #1e1e1e;
+  background-color: var(--color-dark-gray);
 }
 </style>

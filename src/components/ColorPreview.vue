@@ -30,16 +30,16 @@ const previewText = ref('Unread message color')
 
 <style scoped>
 .preview-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding: 0.7rem;
-  border: 1px solid var(--border-color, #dee2e6);
-  border-radius: 0.3rem;
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  gap: var(--gap-sm);
+  margin-top: var(--spacing-base);
+  padding: var(--spacing-lg-sm);
+  border: var(--border-default);
+  border-radius: var(--border-radius-sm);
 }
 .preview-text-container {
-  padding: 0.5rem;
-  border-radius: 0.3rem;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-sm);
 }
 </style>

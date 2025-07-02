@@ -4,88 +4,135 @@
   padding: 0;
 }
 
+:root {
+  /* Common variables */
+  --extension-width: 320px;
+  --extension-min-height: 320px;
+  --popup-z-index: 9999;
+  --transition-duration: 0.3s;
+  --transition-theme: background-color var(--transition-duration), color var(--transition-duration);
+  --border-radius-sm: 0.3rem;
+  --spacing-xs: 0.3rem;
+  --spacing-sm: 0.4rem;
+  --spacing-md: 0.5rem;
+  --spacing-md-lg: 0.6rem;
+  --spacing-lg-sm: 0.7rem;
+  --spacing-base: 1rem;
+  --spacing-lg: 1.4rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 1.7rem;
+  --disabled-opacity: 0.5;
+  --hover-opacity: 0.9;
+  --popup-offset: 10px;
+  --full-width: 100%;
+  --border-width: 1px;
+  --font-size-sm: 0.6rem;
+  --font-size-base: 1.2rem;
+  --font-weight-semibold: 600;
+  --gap-sm: 0.5rem;
+  --gap-base: 1rem;
+  --width-12: 12rem;
+
+  /* Color palette */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-dark-gray: #1e1e1e;
+  --color-medium-gray: #4a4a4a;
+  --color-light-gray: #dee2e6;
+  --color-border-light: #d1d5db;
+  --color-text-dark: #0f0f0f;
+  --color-white-alt: #fff;
+  --color-black-alt: #000;
+  --color-dark-alt: #333;
+  --color-border-dark: #555;
+
+  /* Layout */
+  --flex-center: flex;
+  --flex-column: column;
+  --align-center: center;
+  --justify-center: center;
+  --justify-between: space-between;
+
+  /* Common border */
+  --border-default: var(--border-width) solid var(--border-color);
+}
+
 :root[data-theme='light'] {
-  --bg-color: #ffffff;
-  --text-color: #000000;
-  --border-color: #dee2e6;
+  --bg-color: var(--color-white);
+  --text-color: var(--color-black);
+  --border-color: var(--color-light-gray);
 }
 
 :root[data-theme='dark'] {
-  --bg-color: #1e1e1e;
-  --text-color: #ffffff;
-  --border-color: #4a4a4a;
+  --bg-color: var(--color-dark-gray);
+  --text-color: var(--color-white);
+  --border-color: var(--color-medium-gray);
 }
 
 html,
 body {
-  border: 1px solid green;
+  border: var(--border-width) solid green;
   background-color: green;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: var(--flex-center);
+  flex-direction: var(--flex-column);
+  align-items: var(--align-center);
+  justify-content: var(--justify-center);
   position: relative;
-  width: 320px; /* Default extension width */
+  width: var(--extension-width); /* Default extension width */
   height: auto; /* Allow height to adjust to content */
-  min-height: 320px; /* Minimum height */
-  padding: 1rem;
+  min-height: var(--extension-min-height); /* Minimum height */
+  padding: var(--spacing-base);
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
   font-family: var(--font-family-base);
   border: none;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
+  transition: var(--transition-theme);
   overflow: visible !important; /* Allow content to overflow */
 }
 
 #app {
-  width: 100%;
+  width: var(--full-width);
 }
 
 /* Additional theme-based styling for the select element */
 :root[data-theme='dark'] select {
-  background-color: #1e1e1e !important;
-  color: #ffffff !important;
-  border-color: #4a4a4a !important;
+  background-color: var(--color-dark-gray) !important;
+  color: var(--color-white) !important;
+  border-color: var(--color-medium-gray) !important;
 }
 
 :root[data-theme='light'] select {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border-color: #d1d5db !important;
+  background-color: var(--color-white) !important;
+  color: var(--color-black) !important;
+  border-color: var(--color-border-light) !important;
 }
 
 /* Theme-specific styling for color picker wrapper pseudo-element */
 :root[data-theme='dark'] .color-picker-wrapper::before {
-  background-color: #1e1e1e !important;
-  color: #ffffff !important;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
+  background-color: var(--color-dark-gray) !important;
+  color: var(--color-white) !important;
+  transition: var(--transition-theme);
 }
 
 :root[data-theme='light'] .color-picker-wrapper::before {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
+  background-color: var(--color-white) !important;
+  color: var(--color-black) !important;
+  transition: var(--transition-theme);
 }
 
 /* Theme-specific styling for color picker */
 :root[data-theme='dark'] .color-input__popup {
-  color: #fff !important;
-  /* background-color: #333 !important; */
+  color: var(--color-white-alt) !important;
+  /* background-color: var(--color-dark-alt) !important; */
 }
 
 :root[data-theme='light'] .color-input__popup {
-  color: #000;
-  /* background-color: #ffff !important; */
+  color: var(--color-black-alt);
+  /* background-color: var(--color-white) !important; */
 }
 
 .color-input__box--disabled {
-  opacity: 0.5;
+  opacity: var(--disabled-opacity);
 }
 
 .color-input__popup,
@@ -95,23 +142,22 @@ body {
   position: relative !important;
   top: 0 !important;
   left: 0 !important;
-  /* border: 1px solid var(--border-colo); */
+  /* border: var(--border-width) solid var(--border-color); */
 }
 .color-input__popup {
   position: absolute;
-  z-index: 9999;
-  max-width: 100% !important;
-  min-width: 100% !important;
+  z-index: var(--popup-z-index);
+  max-width: var(--full-width) !important;
+  min-width: var(--full-width) !important;
   margin: 0 auto;
-  padding: 1.4rem;
+  padding: var(--spacing-lg);
   background-color: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
   box-shadow: none !important;
   -webkit-user-select: none;
   user-select: none;
-  color: #0f0f0f;
-  --popup-offset: 10px;
+  color: var(--color-text-dark);
 }
 .color-input__text-inputs-area {
   text-transform: uppercase;
