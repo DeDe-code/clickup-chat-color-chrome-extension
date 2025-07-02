@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple background circle -->
+  <circle cx="16" cy="16" r="15" fill="#7b68ee" stroke="#5a52d5" stroke-width="1"/>
+  
+  <!-- Letter "C" for ClickUp -->
+  <text x="16" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">C</text>
+  
+  <!-- Small highlight accent -->
+  <circle cx="24" cy="8" r="4" fill="#ff6b6b"/>
+  <circle cx="24" cy="8" r="2.5" fill="#ff8888"/>
+</svg>

@@ -1,6 +1,6 @@
 # ClickUp Message Highlighter Chrome Extension
 
-A Chrome extension built with Vue 3, Vite, and Tailwind CSS to highlight unread messages in ClickUp.
+A Chrome extension built with Vue 3 and Vite to highlight unread messages in ClickUp.
 
 ## Features
 
@@ -79,7 +79,7 @@ The production build will be in the `dist` folder. The packaged extension will b
 
 - Vue 3 with Composition API
 - Vite for fast development and optimized builds
-- Tailwind CSS for styling
+- Custom CSS for styling
 - Pinia for state management
 - Chrome Storage API for persistence
 

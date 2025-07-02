@@ -103,7 +103,7 @@ body {
   max-width: 100% !important;
   min-width: 100% !important;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.4rem;
   background-color: transparent;
   border: 1px solid var(--border-color);
   border-radius: 0.3rem;

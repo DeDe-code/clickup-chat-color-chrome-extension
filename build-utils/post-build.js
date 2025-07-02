@@ -12,8 +12,8 @@ const rootDir = path.resolve(__dirname, '..')
 const distDir = path.join(rootDir, 'dist')
 
 // Handle the case where we're running in watch mode
-const isWatchMode = process.argv.includes('--watch')
-const isDebugMode = process.argv.includes('--debug')
+const _isWatchMode = process.argv.includes('--watch')
+const _isDebugMode = process.argv.includes('--debug')
 
 /**
  * Copy the manifest.json and any other static assets that don't go through Vite
@@ -53,6 +53,32 @@ async function postBuild() {
       console.log('✅ Copied favicon.ico')
     } catch (error) {
       console.log('⚠️ No favicon.ico found to copy:', error.code)
+    }
+
+    // Copy extension icon files
+    const iconSizes = [16, 32, 48, 128]
+    for (const size of iconSizes) {
+      const iconFile = `icon${size}.png`
+      const iconSrc = path.join(rootDir, 'public', iconFile)
+      const iconDest = path.join(distDir, iconFile)
+
+      try {
+        await fs.copyFile(iconSrc, iconDest)
+        console.log(`✅ Copied ${iconFile}`)
+      } catch (error) {
+        console.log(`⚠️ No ${iconFile} found to copy:`, error.code)
+      }
+    }
+
+    // Copy SVG icon for reference
+    const svgIconSrc = path.join(rootDir, 'public', 'icon.svg')
+    const svgIconDest = path.join(distDir, 'icon.svg')
+
+    try {
+      await fs.copyFile(svgIconSrc, svgIconDest)
+      console.log('✅ Copied icon.svg')
+    } catch (error) {
+      console.log('⚠️ No icon.svg found to copy:', error.code)
     }
 
     console.log('✅ Post-build completed successfully!')

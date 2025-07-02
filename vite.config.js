@@ -44,6 +44,7 @@ export default defineConfig(({ mode }) => {
         input: {
           popup: resolve('index.html'),
           content: resolve('src/content/content.js'),
+          background: resolve('src/background/background.js'),
         },
         output: {
           entryFileNames: '[name].js', // No hash for entry files
