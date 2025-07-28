@@ -6,15 +6,17 @@ import ColorInput from 'vue-color-input'
 // Import the CSS directly from node_modules
 import '../assets/vue-color-input.css'
 
+console.log('ColorManager.vue loaded')
 const emit = defineEmits(['colorsChanged'])
 
-const useClickUpTextColor = ref(false)
-const useClickUpBackgroundColor = ref(false)
+const useClickUpTextColor = ref(true)
+const useClickUpBackgroundColor = ref(true)
 
 // Simple function to handle color picker open/close
 function handlePopoverOpen() {
   document.body.classList.add('color-picker-open')
   document.documentElement.classList.add('color-picker-open')
+  console.log('it works')
 }
 
 function handlePopoverClose() {
@@ -22,22 +24,38 @@ function handlePopoverClose() {
   document.documentElement.classList.remove('color-picker-open')
 }
 
-// Load saved checkbox states
-chrome.storage.local.get(['useClickUpTextColor', 'useClickUpBackgroundColor'], (result) => {
-  useClickUpTextColor.value = !!result.useClickUpTextColor
-  useClickUpBackgroundColor.value = !!result.useClickUpBackgroundColor
+// Load saved checkbox states and color values
+chrome.storage.local.get(
+  ['useClickUpTextColor', 'useClickUpBackgroundColor', 'backgroundColor', 'textColor'],
+  (result) => {
+    // Default to true if no saved state exists
+    useClickUpTextColor.value =
+      result.useClickUpTextColor !== undefined ? !!result.useClickUpTextColor : true
+    useClickUpBackgroundColor.value =
+      result.useClickUpBackgroundColor !== undefined ? !!result.useClickUpBackgroundColor : true
 
-  emit('colorsChanged', {
-    backgroundColor: useClickUpBackgroundColor.value
-      ? 'var(--cu-background-primary)'
-      : backgroundColor.value,
-    textColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : textColor.value,
-  })
-})
+    // Load saved color values if they exist
+    if (result.backgroundColor) {
+      backgroundColor.value = result.backgroundColor
+    }
+    if (result.textColor) {
+      textColor.value = result.textColor
+    }
+
+    emit('colorsChanged', {
+      backgroundColor: useClickUpBackgroundColor.value
+        ? 'var(--cu-background-primary)'
+        : backgroundColor.value,
+      textColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : textColor.value,
+    })
+  },
+)
 
 const { backgroundColor, textColor } = useColorPicker('#fe5722', '#2097f3', (colors) => {
-  // Save the effective colors (what's actually used) to Chrome storage
+  // Save both the current color values and the effective colors to Chrome storage
   chrome.storage.local.set({
+    backgroundColor: colors.backgroundColor,
+    textColor: colors.textColor,
     effectiveBackgroundColor: useClickUpBackgroundColor.value
       ? 'var(--cu-background-primary)'
       : colors.backgroundColor,
@@ -62,10 +80,12 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
     ? 'var(--cu-content-primary)'
     : textColor.value
 
-  // Save all settings to Chrome storage
+  // Save all settings to Chrome storage (checkbox states, color values, and effective colors)
   chrome.storage.local.set({
     useClickUpTextColor: useClickUpTextColor.value,
     useClickUpBackgroundColor: useClickUpBackgroundColor.value,
+    backgroundColor: backgroundColor.value,
+    textColor: textColor.value,
     effectiveBackgroundColor: effectiveBackgroundColor,
     effectiveTextColor: effectiveTextColor,
   })
@@ -75,6 +95,29 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
     textColor: effectiveTextColor,
   })
 })
+
+// --- MutationObserver for Cancel Button Injection ---
+if (typeof window !== 'undefined') {
+  const observer = new MutationObserver(() => {
+    const popups = document.querySelectorAll('.color-input__popup')
+    popups.forEach((popup) => {
+      if (!popup.querySelector('.color-input__popup-cancel-btn')) {
+        const btn = document.createElement('button')
+        btn.className = 'color-input__popup-cancel-btn'
+        btn.type = 'button'
+        btn.textContent = 'Cancel'
+        btn.onclick = (e) => {
+          e.stopPropagation()
+          const closeBtn = popup.querySelector('.color-input__close, .v-color-input__close')
+          if (closeBtn) closeBtn.click()
+          else popup.style.display = 'none'
+        }
+        popup.appendChild(btn)
+      }
+    })
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+}
 </script>
 
 <template>
@@ -90,32 +133,30 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
       </div>
     </div>
 
-    <div class="color-picker-wrapper">
+    <div class="color-picker-wrapper" v-show="!useClickUpTextColor || !useClickUpBackgroundColor">
       <!-- No debug button in the basic implementation -->
 
-      <div class="bg-picker-wrapper">
-        <label for="background-picker">Background</label>
+      <div class="text-picker-wrapper" v-show="!useClickUpTextColor">
+        <label for="text-picker">Text</label>
         <color-input
-          id="background-picker"
-          v-model="backgroundColor"
-          :disabled="useClickUpBackgroundColor"
+          id="text-picker"
+          v-model="textColor"
           popover-to="right"
           format="hex"
-          custom-class="color-picker-background"
+          custom-class="color-picker-text"
           @popover-open="handlePopoverOpen"
           @popover-close="handlePopoverClose"
         />
       </div>
 
-      <div class="text-picker-wrapper">
-        <label for="text-picker">Text</label>
+      <div class="bg-picker-wrapper" v-show="!useClickUpBackgroundColor">
+        <label for="background-picker">Background</label>
         <color-input
-          id="text-picker"
-          v-model="textColor"
-          :disabled="useClickUpTextColor"
+          id="background-picker"
+          v-model="backgroundColor"
           popover-to="right"
           format="hex"
-          custom-class="color-picker-text"
+          custom-class="color-picker-background"
           @popover-open="handlePopoverOpen"
           @popover-close="handlePopoverClose"
         />
@@ -150,7 +191,7 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   display: var(--flex-center);
   flex-direction: var(--flex-column);
   row-gap: var(--gap-sm);
-  padding: var(--spacing-md-lg);
+  padding: var(--spacing-lg-sm);
   border: var(--border-default);
   border-radius: var(--border-radius-sm);
 }
@@ -168,7 +209,7 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
 }
 
 /* Theme-specific styling */
-:deep([data-theme='dark'] .v-color-input__control) {
+[data-theme='dark'] .v-color-input__control {
   background-color: var(--color-dark-alt) !important;
   border-color: var(--color-border-dark) !important;
 }

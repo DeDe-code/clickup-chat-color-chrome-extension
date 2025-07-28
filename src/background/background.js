@@ -4,7 +4,7 @@
 
 // When extension is installed or enabled, inject content script into existing ClickUp tabs
 chrome.runtime.onInstalled.addListener(async () => {
-  console.log('ClickUp Message Highlighter installed/enabled')
+  console.log('ClickUp Extender installed/enabled')
 
   try {
     // Get all tabs

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ClickUp Message Highlighter",
+  "name": "ClickUp Extender",
   "version": "1.0.0",
-  "description": "Highlights unread messages in ClickUp.",
+  "description": "Extends ClickUp functionality with message highlighting and more.",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "host_permissions": ["https://app.clickup.com/*"],
   "icons": {

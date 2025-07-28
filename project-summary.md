@@ -1056,53 +1056,171 @@ User requested complete elimination of repetitive CSS values across the entire c
 
 ---
 
-## 🎯 **Next Development Priorities**
+## Debug Version & Extension Loading Investigation (December 19, 2024 - 16:30)
 
-Based on today's foundation work, recommended next steps:
+### Issue Identified
 
-### **Immediate (Next Session):**
+The extension appears to not be applying any visual changes in Chrome, despite successful builds and no error messages. To investigate this issue, comprehensive debugging tools have been implemented.
 
-1. **Component Library Creation** - Leverage new CSS variables for reusable components
-2. **Advanced Theme System** - Build upon variables for user-customizable themes
-3. **Storybook Integration** - Document components using new design system
+### Debug Enhancements Added
 
-### **Short-term (This Week):**
+1. **Visual Loading Confirmation**
 
-1. **ClickUp Sync Enhancement** - Robust real-time theme synchronization
-2. **Testing Framework** - Unit tests for CSS variables and components
-3. **Performance Audit** - Analyze impact of changes on runtime performance
+   - Added a bright red notification box that appears for 5 seconds when extension loads
+   - Displays "🔥 ClickUp Highlighter LOADED!" in top-right corner
+   - Confirms the content script is executing
 
-### **Long-term (This Month):**
+2. **Enhanced Console Logging**
 
-1. **Design Token Export** - Generate design tokens for design team
-2. **Chrome Web Store Preparation** - Finalize for store submission
-3. **User Feedback Integration** - Collect usage data and iterate
+   - Detailed initialization logs with URL, user agent, and document state
+   - DOM structure analysis after 2-second delay
+   - CSS injection confirmation with element counts
+   - Selector matching verification
+
+3. **Manual Testing Keyboard Shortcut**
+
+   - Press `Ctrl+Shift+H` on ClickUp to trigger manual highlighting test
+   - Applies bright pink/green colors with pulsing animation for 10 seconds
+   - Helps identify what elements can be targeted
+
+4. **Expanded CSS Selectors**
+   - Added fallback selectors using attribute wildcards
+   - Target any element with "unread" or "notification" in class name
+   - More comprehensive coverage of potential ClickUp elements
+
+### Updated Selectors Strategy
+
+```css
+/* Primary targeted selectors */
+.cu-task-row.has-unread,
+.cu-list-item.has-unread,
+.cu-task-item.has-unread,
+[class*="unread"][class*="task"],
+[class*="unread"][class*="item"],
+[class*="notification"][class*="task"],
+[class*="notification"][class*="item"]
+
+/* Fallback selectors */
+[class*="unread"]:not(input):not(textarea):not(select)
+```
+
+### Testing Documentation Created
+
+- `TESTING_GUIDE.md`: Comprehensive guide for loading, testing, and troubleshooting
+- Step-by-step Chrome extension loading instructions
+- Multiple testing approaches for different scenarios
+- Advanced debugging commands for developer console
+
+### Possible Root Causes Under Investigation
+
+1. **DOM Structure Changes**: ClickUp may have updated their class names/structure
+2. **Timing Issues**: Content script may run before relevant elements are created
+3. **CSS Specificity**: ClickUp's styles may override our !important rules
+4. **Permission Issues**: Extension may not have proper access despite manifest
+
+### Next Steps for User
+
+1. Build and load extension in Chrome developer mode (`npm run build`, then load `dist/` folder)
+2. Visit ClickUp and look for red notification box confirming extension loads
+3. Check browser console for debug logs and selector analysis
+4. Use `Ctrl+Shift+H` to manually test element targeting capabilities
+5. Report findings to determine if selectors need updating based on current ClickUp DOM
+
+### Technical Foundation Solid
+
+- Extension builds successfully without errors
+- All icons and manifest properly configured
+- Content script properly minified and included in build
+- Background script handles injection correctly
+- CSS variable system provides maintainable styling
+
+The debugging tools now provide clear visibility into what's happening (or not happening) when the extension runs on ClickUp, enabling rapid identification and resolution of the highlighting issue.
 
 ---
 
-## 📝 **Development Notes**
+## Extension Name Update (July 11, 2025 - 10:30)
 
-### **Key Learnings:**
+### Overview
 
-- CSS variables provide excellent maintainability benefits
-- Systematic refactoring approach prevents introduction of bugs
-- Build process validation crucial for complex changes
-- Manual icon creation workflow more reliable than automated scripts
+Completed comprehensive update of extension name from "ClickUp Message Highlighter" to "ClickUp Extender" across all project files to reflect broader functionality scope.
 
-### **Best Practices Established:**
+### Changes Made
 
-- Always verify build success after major CSS changes
-- Use semantic variable naming for long-term maintainability
-- Maintain backward compatibility during refactoring
-- Document all changes with clear before/after examples
+#### Core Extension Files
 
-### **Technical Debt Reduced:**
+- **`package.json`** ✅ Updated by user
 
-- Eliminated hardcoded values across entire codebase
-- Removed unnecessary build scripts and dependencies
-- Established clear separation between essential and optional tooling
-- Created foundation for scalable CSS architecture
+  - Changed `"name": "ClickUp Extender"`
+
+- **`public/manifest.json`** ✅ Updated
+  - Changed `"name": "ClickUp Extender"`
+  - Updated `"description": "Extends ClickUp functionality with message highlighting and more."`
+
+#### Source Code Updates
+
+- **`src/content/content.js`** ✅ Comprehensive updates
+
+  - Error messages: "ClickUp Extender aborted..."
+  - Console logs: "ClickUp Extender initializing..."
+  - Test element display: "🔥 ClickUp Extender LOADED!"
+  - Style application logs: "ClickUp Extender: Applied enhanced CSS styles..."
+
+- **`src/background/background.js`** ✅ Updated
+  - Installation log: "ClickUp Extender installed/enabled"
+
+#### Documentation Updates
+
+- **`README.md`** ✅ Updated
+
+  - Title: "ClickUp Extender Chrome Extension"
+  - Description updated to reflect broader functionality
+
+- **`TESTING_GUIDE.md`** ✅ Updated
+  - Title: "ClickUp Extender - Testing & Troubleshooting Guide"
+  - All references to extension name in testing procedures
+  - Expected console output examples updated
+
+### User-Facing Changes
+
+#### Chrome Extensions Management
+
+- **Extension Name:** "ClickUp Extender"
+- **Description:** "Extends ClickUp functionality with message highlighting and more."
+- **Toolbar Icon Tooltip:** "ClickUp Extender"
+
+#### Developer Console Output
+
+- "🚀 ClickUp Extender initializing..."
+- "ClickUp Extender: Applied enhanced CSS styles..."
+- "ClickUp Extender installed/enabled"
+
+#### Visual Test Elements
+
+- Red notification box displays "🔥 ClickUp Extender LOADED!"
+
+### Technical Notes
+
+- **Build Process:** Extension builds successfully with new name
+- **Functionality:** All existing features remain unchanged
+- **Compatibility:** No breaking changes to extension behavior
+- **Distribution:** Ready for packaging with `npm run build:ext`
+
+### Files Intentionally Not Updated
+
+Historical documentation files maintain original names for reference:
+
+- `development-summary.md`
+- `project-summary.md` (except this new entry)
+- `full-summary.md`
+- `CHAT_CHANNEL_UPDATE.md`
+
+### Verification Steps
+
+1. Built extension successfully with `npm run build`
+2. Confirmed `dist/manifest.json` contains correct name
+3. Verified all console logs use new extension name
+4. Updated all user-facing documentation
+
+The extension now consistently presents as "ClickUp Extender" across all user touchpoints while maintaining full backward compatibility and functionality.
 
 ---
-
-_This session successfully modernized the extension's CSS architecture while maintaining all existing functionality. The foundation is now set for rapid development of new features and enhanced maintainability._

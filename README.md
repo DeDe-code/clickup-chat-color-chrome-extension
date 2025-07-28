@@ -1,6 +1,6 @@
-# ClickUp Message Highlighter Chrome Extension
+# ClickUp Extender Chrome Extension
 
-A Chrome extension built with Vue 3 and Vite to highlight unread messages in ClickUp.
+A Chrome extension built with Vue 3 and Vite to extend ClickUp functionality with message highlighting and enhanced features.
 
 ## Features
 

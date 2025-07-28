@@ -219,8 +219,8 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
   margin: 0 auto;
   padding-block: var(--spacing-md-lg);
   padding-inline: var(--spacing-lg);
-  border: var(--border-default);
-  border-radius: var(--border-radius-sm);
+  /* border: var(--border-default);
+  border-radius: var(--border-radius-sm); */
 }
 .theme-selector {
   padding-block: var(--spacing-sm);
@@ -237,11 +237,11 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
   position: relative;
   margin-top: var(--spacing-xl);
   padding: var(--spacing-lg);
-  border: var(--border-default);
-  border-radius: var(--border-radius-sm);
+  /* border: var(--border-default);
+  border-radius: var(--border-radius-sm); */
 }
 .color-picker-wrapper::before {
-  content: 'Choose your colors';
+  content: 'Chat channel colors';
   position: absolute;
   width: var(--width-12);
   height: var(--spacing-2xl);
