@@ -51,7 +51,15 @@ chrome.storage.local.get(
   },
 )
 
-const { backgroundColor, textColor } = useColorPicker('#fe5722', '#2097f3', (colors) => {
+// Get ClickUp theme colors for initial values
+let initialBg = '#fe5722'
+let initialTxt = '#2097f3'
+chrome.storage.local.get(['cuContentPrimary', 'cuBackgroundPrimary'], (result) => {
+  if (result.cuContentPrimary) initialTxt = result.cuContentPrimary
+  if (result.cuBackgroundPrimary) initialBg = result.cuBackgroundPrimary
+})
+
+const { backgroundColor, textColor } = useColorPicker(initialBg, initialTxt, (colors) => {
   // Save both the current color values and the effective colors to Chrome storage
   chrome.storage.local.set({
     backgroundColor: colors.backgroundColor,
@@ -131,6 +139,7 @@ if (typeof window !== 'undefined') {
         <input type="checkbox" id="cu-bg" v-model="useClickUpBackgroundColor" />
         <label for="cu-bg"> Use ClickUp primary background color </label>
       </div>
+      <!-- Reset button removed: now only in parent -->
     </div>
 
     <div class="color-picker-wrapper" v-show="!useClickUpTextColor || !useClickUpBackgroundColor">

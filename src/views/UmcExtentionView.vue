@@ -166,20 +166,56 @@ function sendMessageToContentScript(bg, txt) {
   })
 }
 
-const handleColorsChanged = ({ backgroundColor: bg, textColor: txt }) => {
+// Remove previewBackground and previewText refs and computed
+// Use only the effective color values from ColorManager
+let effectiveBackground = ref('var(--cu-background-primary)')
+let effectiveText = ref('var(--cu-content-primary)')
+
+function handleColorsChanged({ backgroundColor: bg, textColor: txt }) {
   colorStore.setColors(bg, txt)
-  // Store in local storage for persistence
   chrome.storage.local.set({
     backgroundColor: bg,
     textColor: txt,
   })
-
-  // Send direct message to content script for immediate update
+  effectiveBackground.value = resolveCssVariable(bg)
+  effectiveText.value = resolveCssVariable(txt)
   sendMessageToContentScript(bg, txt)
 }
 
-const previewBackground = computed(() => resolveCssVariable(backgroundColor.value))
-const previewText = computed(() => resolveCssVariable(textColor.value))
+const colorManagerKey = ref(0)
+
+const handleReset = () => {
+  // Use ClickUp theme colors as true defaults
+  const clickUpTextColor = cuContentPrimary.value
+  const clickUpBackgroundColor = cuBackgroundPrimary.value
+  // Reset Pinia store
+  colorStore.setColors(clickUpBackgroundColor, clickUpTextColor)
+  // Reset theme
+  theme.value = DEFAULT_THEME
+  applyTheme(DEFAULT_THEME)
+  // Reset local refs
+  cuContentPrimary.value = clickUpTextColor
+  cuBackgroundPrimary.value = clickUpBackgroundColor
+  // Reset Chrome storage (including checkboxes)
+  chrome.storage.local.set({
+    backgroundColor: clickUpBackgroundColor,
+    textColor: clickUpTextColor,
+    cuContentPrimary: clickUpTextColor,
+    cuBackgroundPrimary: clickUpBackgroundColor,
+    theme: DEFAULT_THEME,
+    umcTheme: DEFAULT_THEME,
+    effectiveBackgroundColor: clickUpBackgroundColor,
+    effectiveTextColor: clickUpTextColor,
+    useClickUpTextColor: true,
+    useClickUpBackgroundColor: true,
+  })
+  // Notify content script to update colors immediately
+  sendMessageToContentScript(clickUpBackgroundColor, clickUpTextColor)
+  // Force ColorManager to re-mount and reload checkbox state
+  colorManagerKey.value++
+}
+
+const DEFAULT_THEME = 'system'
 </script>
 
 <template>
@@ -192,10 +228,16 @@ const previewText = computed(() => resolveCssVariable(textColor.value))
         <option value="dark">Dark</option>
       </select>
     </div>
-    <!-- <h1>Choose your colors</h1> -->
     <div v-if="isReady" class="color-picker-wrapper">
-      <ColorManager @colorsChanged="handleColorsChanged" />
-      <ColorPreview :backgroundColor="previewBackground" :textColor="previewText" />
+      <ColorManager :key="colorManagerKey" @colorsChanged="handleColorsChanged" />
+      <ColorPreview :backgroundColor="effectiveBackground" :textColor="effectiveText" />
+      <button
+        class="color-input__popup-cancel-btn"
+        style="display: block; margin: 1.2rem auto 0 auto"
+        @click="handleReset"
+      >
+        Reset
+      </button>
     </div>
     <div v-else class="loading-wrapper flex items-center justify-center h-32 text-lg font-semibold">
       loading...

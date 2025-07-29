@@ -8,27 +8,32 @@ import { ref, watch, onMounted } from 'vue'
  * @param {string} initialBackgroundColor - Initial background color in hex format
  * @param {string} initialTextColor - Initial text color in hex format
  * @param {Function} emitFn - Optional callback function when colors change
+ * @param {Object} resetSignal - Optional signal to reset colors
  * @returns {Object} backgroundColor and textColor refs
  */
 export function useColorPicker(
-  initialBackgroundColor = '#fe5722',
-  initialTextColor = '#2097f3',
+  initialBackgroundColor,
+  initialTextColor,
   emitFn = null,
+  resetSignal = null,
 ) {
+  // If no initial colors provided, use ClickUp theme colors from storage or fallback
   const backgroundColor = ref(initialBackgroundColor)
   const textColor = ref(initialTextColor)
 
-  // Load saved colors from Chrome storage
-  onMounted(() => {
-    chrome.storage.local.get(['backgroundColor', 'textColor'], (result) => {
-      if (result.backgroundColor) {
-        backgroundColor.value = result.backgroundColor
-      }
-      if (result.textColor) {
-        textColor.value = result.textColor
-      }
+  if (!initialBackgroundColor || !initialTextColor) {
+    chrome.storage.local.get(['cuContentPrimary', 'cuBackgroundPrimary'], (result) => {
+      if (!initialTextColor && result.cuContentPrimary) textColor.value = result.cuContentPrimary
+      if (!initialBackgroundColor && result.cuBackgroundPrimary)
+        backgroundColor.value = result.cuBackgroundPrimary
+    })
+  }
 
-      // Emit initial values after loading from storage
+  // Helper to load from Chrome storage or use initial values
+  function loadColors() {
+    chrome.storage.local.get(['backgroundColor', 'textColor'], (result) => {
+      backgroundColor.value = result.backgroundColor || backgroundColor.value
+      textColor.value = result.textColor || textColor.value
       if (emitFn) {
         emitFn({
           backgroundColor: backgroundColor.value,
@@ -36,7 +41,10 @@ export function useColorPicker(
         })
       }
     })
-  })
+  }
+
+  // Load saved colors from Chrome storage
+  onMounted(loadColors)
 
   // Watch for changes and save to Chrome storage
   watch([backgroundColor, textColor], ([newBgColor, newTextColor]) => {
@@ -54,6 +62,13 @@ export function useColorPicker(
       })
     }
   })
+
+  // Watch for reset signal and reload colors
+  if (resetSignal) {
+    watch(resetSignal, () => {
+      loadColors()
+    })
+  }
 
   return { backgroundColor, textColor }
 }
