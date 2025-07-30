@@ -1,6 +1,6 @@
 <script setup>
 /* global chrome */
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useColorPicker } from '../composables/useColorPicker.js'
 import ColorInput from 'vue-color-input'
 // Import the CSS directly from node_modules
@@ -104,6 +104,14 @@ watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
   })
 })
 
+// Expose cuBackgroundPrimary and cuContentPrimary for template binding
+const cuBackgroundPrimary = ref('#fe5722')
+const cuContentPrimary = ref('#2097f3')
+chrome.storage.local.get(['cuBackgroundPrimary', 'cuContentPrimary'], (result) => {
+  if (result.cuBackgroundPrimary) cuBackgroundPrimary.value = result.cuBackgroundPrimary
+  if (result.cuContentPrimary) cuContentPrimary.value = result.cuContentPrimary
+})
+
 // --- MutationObserver for Cancel Button Injection ---
 if (typeof window !== 'undefined') {
   const observer = new MutationObserver(() => {
@@ -131,13 +139,71 @@ if (typeof window !== 'undefined') {
 <template>
   <div class="color-manager">
     <div class="clickup-theme-toggle">
-      <div class="clickup-text-toggle">
-        <input type="checkbox" id="cu-theme" v-model="useClickUpTextColor" />
-        <label for="cu-theme"> Use ClickUp primary content color </label>
+      <div class="clickup-text-toggle custom-checkbox-wrapper">
+        <input
+          type="checkbox"
+          id="cu-theme"
+          v-model="useClickUpTextColor"
+          class="custom-checkbox-input"
+        />
+        <label for="cu-theme" class="custom-checkbox-label">
+          <span
+            class="custom-checkbox-box"
+            :style="useClickUpTextColor ? { backgroundColor: cuContentPrimary } : {}"
+          >
+            <svg
+              v-if="useClickUpTextColor"
+              class="custom-checkbox-checkmark"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 10.5L9 14.5L15 7.5"
+                stroke="white"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="custom-checkbox-text">Use ClickUp primary content color</span>
+        </label>
       </div>
-      <div class="clickup-bg-toggle">
-        <input type="checkbox" id="cu-bg" v-model="useClickUpBackgroundColor" />
-        <label for="cu-bg"> Use ClickUp primary background color </label>
+      <div class="clickup-bg-toggle custom-checkbox-wrapper">
+        <input
+          type="checkbox"
+          id="cu-bg"
+          v-model="useClickUpBackgroundColor"
+          class="custom-checkbox-input"
+        />
+        <label for="cu-bg" class="custom-checkbox-label">
+          <span
+            class="custom-checkbox-box"
+            :style="useClickUpBackgroundColor ? { backgroundColor: cuBackgroundPrimary } : {}"
+          >
+            <svg
+              v-if="useClickUpBackgroundColor"
+              class="custom-checkbox-checkmark"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 10.5L9 14.5L15 7.5"
+                stroke="white"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="custom-checkbox-text">Use ClickUp primary background color</span>
+        </label>
       </div>
       <!-- Reset button removed: now only in parent -->
     </div>
@@ -226,5 +292,49 @@ if (typeof window !== 'undefined') {
 :deep([data-theme='light'] .v-color-input__control) {
   background-color: var(--color-white) !important;
   border-color: var(--color-light-gray) !important;
+}
+
+.custom-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+.custom-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.5em;
+  user-select: none;
+}
+.custom-checkbox-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-dark, #222);
+  background: #23272f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    border 0.2s;
+  box-sizing: border-box;
+}
+/* .custom-checkbox-input:focus + .custom-checkbox-label .custom-checkbox-box {
+  outline: 2px solid var(--color-primary, #2097f3);
+  outline-offset: 2px;
+} */
+.custom-checkbox-checkmark {
+  display: block;
+}
+.custom-checkbox-text {
+  color: inherit;
+  font-size: var(--font-size-sm, 1em);
 }
 </style>

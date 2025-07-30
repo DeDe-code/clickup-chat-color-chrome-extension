@@ -336,13 +336,37 @@ if (window.clickupHighlighterInitialized) {
   // Save on initial load
   saveClickUpCssVars()
 
-  // Optionally, observe for changes to these variables
+  // Enhanced: Observe the entire DOM for changes to style/class attributes to catch theme changes in real time
+  let lastCuContentPrimary = ''
+  let lastCuBackgroundPrimary = ''
+  function saveClickUpCssVarsIfChanged() {
+    const el = findClickUpCssVarElement()
+    const cuContentPrimary = getComputedStyle(el).getPropertyValue('--cu-content-primary').trim()
+    const cuBackgroundPrimary = getComputedStyle(el)
+      .getPropertyValue('--cu-background-primary')
+      .trim()
+    if (
+      cuContentPrimary !== lastCuContentPrimary ||
+      cuBackgroundPrimary !== lastCuBackgroundPrimary
+    ) {
+      lastCuContentPrimary = cuContentPrimary
+      lastCuBackgroundPrimary = cuBackgroundPrimary
+      chrome.storage.local.set({ cuContentPrimary, cuBackgroundPrimary })
+      console.log('[ClickUp Extender] Theme vars updated:', cuContentPrimary, cuBackgroundPrimary)
+    }
+  }
+
+  // Initial save
+  saveClickUpCssVarsIfChanged()
+
+  // Observe all elements for style/class changes
   const cuVarObserver = new MutationObserver(() => {
-    saveClickUpCssVars()
+    saveClickUpCssVarsIfChanged()
   })
   cuVarObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['style', 'class'],
+    subtree: true,
   })
 
   // ✅ Initial load

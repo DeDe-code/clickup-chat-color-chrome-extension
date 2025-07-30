@@ -231,13 +231,9 @@ const DEFAULT_THEME = 'system'
     <div v-if="isReady" class="color-picker-wrapper">
       <ColorManager :key="colorManagerKey" @colorsChanged="handleColorsChanged" />
       <ColorPreview :backgroundColor="effectiveBackground" :textColor="effectiveText" />
-      <button
-        class="color-input__popup-cancel-btn"
-        style="display: block; margin: 1.2rem auto 0 auto"
-        @click="handleReset"
-      >
-        Reset
-      </button>
+      <div class="reset-btn-row">
+        <button class="reset-default-btn" @click="handleReset">Reset Default Colors</button>
+      </div>
     </div>
     <div v-else class="loading-wrapper flex items-center justify-center h-32 text-lg font-semibold">
       loading...
@@ -265,16 +261,21 @@ const DEFAULT_THEME = 'system'
   border-radius: var(--border-radius-sm); */
 }
 .theme-selector {
-  padding-block: var(--spacing-sm);
+  padding: var(--spacing-md) !important;
   background-color: var(--bg-color);
   color: var(--text-color);
-  border-color: var(--border-color);
+  border-color: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
+}
+
+.theme-selector:focus {
+  outline: none;
 }
 
 .theme-selector:hover {
   opacity: var(--hover-opacity);
 }
+
 .color-picker-wrapper {
   position: relative;
   margin-top: var(--spacing-xl);
@@ -296,5 +297,23 @@ const DEFAULT_THEME = 'system'
   font-weight: var(--font-weight-semibold);
   text-align: center;
   background-color: var(--color-dark-gray);
+}
+.reset-btn-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+}
+.reset-default-btn {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-danger);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.reset-default-btn:hover {
+  background-color: var(--color-danger-dark);
 }
 </style>

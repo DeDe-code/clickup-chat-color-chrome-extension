@@ -33,7 +33,7 @@ const previewText = ref('Unread message color')
   display: var(--flex-center);
   flex-direction: var(--flex-column);
   gap: var(--gap-sm);
-  margin-top: var(--spacing-base);
+  margin-block: var(--spacing-base);
   padding: var(--spacing-lg-sm);
   border: var(--border-default);
   border-radius: var(--border-radius-sm);
