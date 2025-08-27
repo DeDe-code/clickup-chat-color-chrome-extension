@@ -203,29 +203,25 @@ body {
   border-radius: var(--border-radius-sm);
 }
 .reset-btn-row {
-  /* margin-top: var(--spacing-base); */
   display: flex;
   justify-content: flex-end;
 }
-.reset-btn-row .reset-default-btn {
+.reset-default-btn {
   min-width: 8rem;
-  border: 2px solid #e53935 !important;
-  color: #e53935 !important;
-  background: transparent !important;
-  /* Stronger specificity for border */
-}
-.reset-btn-row .reset-default-btn {
   font-size: var(--font-size-sm);
-  border: 1px solid #e53935 !important;
-  color: var(--color-white-alt) !important;
+  border: 2px solid #e53935 !important;
+  color: var(--color-black-alt) !important;
+  background: transparent !important;
   transition: all var(--transition-duration);
 }
-.reset-btn-row .reset-default-btn:hover {
+.reset-default-btn:hover {
   color: #e53935 !important;
 }
-:root[data-theme='light'] .reset-btn-row .reset-default-btn {
-  color: var(--color-black-alt) !important;
+
+:root[data-theme='dark'] .reset-default-btn {
+  color: var(--color-white-alt) !important;
 }
-:root[data-theme='light'] .reset-btn-row .reset-default-btn:hover {
+
+:root[data-theme='dark'] .reset-default-btn:hover {
   color: #e53935 !important;
 }

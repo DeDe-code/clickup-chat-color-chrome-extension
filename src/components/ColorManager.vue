@@ -1,22 +1,31 @@
 <script setup>
 /* global chrome */
-import { ref, watch, computed } from 'vue'
-import { useColorPicker } from '../composables/useColorPicker.js'
+import { useColorStore } from '@/stores/ColorStore.js'
+const colorStore = useColorStore()
+
+import { ref } from 'vue'
+
+// Debounce utility
+function debounce(fn, delay) {
+  let timer
+  return function (...args) {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+
+const debouncedSetColors = debounce((bg, txt) => {
+  colorStore.setColors(bg, txt)
+}, 300)
 import ColorInput from 'vue-color-input'
 // Import the CSS directly from node_modules
 import '../assets/vue-color-input.css'
 
 console.log('ColorManager.vue loaded')
-const emit = defineEmits(['colorsChanged'])
-
-const useClickUpTextColor = ref(true)
-const useClickUpBackgroundColor = ref(true)
-
 // Simple function to handle color picker open/close
 function handlePopoverOpen() {
   document.body.classList.add('color-picker-open')
   document.documentElement.classList.add('color-picker-open')
-  console.log('it works')
 }
 
 function handlePopoverClose() {
@@ -24,85 +33,12 @@ function handlePopoverClose() {
   document.documentElement.classList.remove('color-picker-open')
 }
 
-// Load saved checkbox states and color values
-chrome.storage.local.get(
-  ['useClickUpTextColor', 'useClickUpBackgroundColor', 'backgroundColor', 'textColor'],
-  (result) => {
-    // Default to true if no saved state exists
-    useClickUpTextColor.value =
-      result.useClickUpTextColor !== undefined ? !!result.useClickUpTextColor : true
-    useClickUpBackgroundColor.value =
-      result.useClickUpBackgroundColor !== undefined ? !!result.useClickUpBackgroundColor : true
-
-    // Load saved color values if they exist
-    if (result.backgroundColor) {
-      backgroundColor.value = result.backgroundColor
-    }
-    if (result.textColor) {
-      textColor.value = result.textColor
-    }
-
-    emit('colorsChanged', {
-      backgroundColor: useClickUpBackgroundColor.value
-        ? 'var(--cu-background-primary)'
-        : backgroundColor.value,
-      textColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : textColor.value,
-    })
-  },
-)
-
-// Get ClickUp theme colors for initial values
-let initialBg = '#fe5722'
-let initialTxt = '#2097f3'
-chrome.storage.local.get(['cuContentPrimary', 'cuBackgroundPrimary'], (result) => {
-  if (result.cuContentPrimary) initialTxt = result.cuContentPrimary
-  if (result.cuBackgroundPrimary) initialBg = result.cuBackgroundPrimary
+import { onMounted } from 'vue'
+onMounted(() => {
+  colorStore.initFromStorage()
 })
 
-const { backgroundColor, textColor } = useColorPicker(initialBg, initialTxt, (colors) => {
-  // Save both the current color values and the effective colors to Chrome storage
-  chrome.storage.local.set({
-    backgroundColor: colors.backgroundColor,
-    textColor: colors.textColor,
-    effectiveBackgroundColor: useClickUpBackgroundColor.value
-      ? 'var(--cu-background-primary)'
-      : colors.backgroundColor,
-    effectiveTextColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : colors.textColor,
-  })
-
-  emit('colorsChanged', {
-    backgroundColor: useClickUpBackgroundColor.value
-      ? 'var(--cu-background-primary)'
-      : colors.backgroundColor,
-    textColor: useClickUpTextColor.value ? 'var(--cu-content-primary)' : colors.textColor,
-  })
-})
-
-// Watch for changes and emit updated values
-watch([useClickUpTextColor, useClickUpBackgroundColor], () => {
-  // Calculate the effective colors based on checkbox states
-  const effectiveBackgroundColor = useClickUpBackgroundColor.value
-    ? 'var(--cu-background-primary)'
-    : backgroundColor.value
-  const effectiveTextColor = useClickUpTextColor.value
-    ? 'var(--cu-content-primary)'
-    : textColor.value
-
-  // Save all settings to Chrome storage (checkbox states, color values, and effective colors)
-  chrome.storage.local.set({
-    useClickUpTextColor: useClickUpTextColor.value,
-    useClickUpBackgroundColor: useClickUpBackgroundColor.value,
-    backgroundColor: backgroundColor.value,
-    textColor: textColor.value,
-    effectiveBackgroundColor: effectiveBackgroundColor,
-    effectiveTextColor: effectiveTextColor,
-  })
-
-  emit('colorsChanged', {
-    backgroundColor: effectiveBackgroundColor,
-    textColor: effectiveTextColor,
-  })
-})
+// ...existing code...
 
 // Expose cuBackgroundPrimary and cuContentPrimary for template binding
 const cuBackgroundPrimary = ref('#fe5722')
@@ -143,16 +79,17 @@ if (typeof window !== 'undefined') {
         <input
           type="checkbox"
           id="cu-theme"
-          v-model="useClickUpTextColor"
+          :checked="colorStore.useClickUpTextColor"
+          @change="colorStore.setUseClickUpTextColor($event.target.checked)"
           class="custom-checkbox-input"
         />
         <label for="cu-theme" class="custom-checkbox-label">
           <span
             class="custom-checkbox-box"
-            :style="useClickUpTextColor ? { backgroundColor: cuContentPrimary } : {}"
+            :style="colorStore.useClickUpTextColor ? { backgroundColor: cuContentPrimary } : {}"
           >
             <svg
-              v-if="useClickUpTextColor"
+              v-if="colorStore.useClickUpTextColor"
               class="custom-checkbox-checkmark"
               width="20"
               height="20"
@@ -176,16 +113,19 @@ if (typeof window !== 'undefined') {
         <input
           type="checkbox"
           id="cu-bg"
-          v-model="useClickUpBackgroundColor"
+          :checked="colorStore.useClickUpBackgroundColor"
+          @change="colorStore.setUseClickUpBackgroundColor($event.target.checked)"
           class="custom-checkbox-input"
         />
         <label for="cu-bg" class="custom-checkbox-label">
           <span
             class="custom-checkbox-box"
-            :style="useClickUpBackgroundColor ? { backgroundColor: cuBackgroundPrimary } : {}"
+            :style="
+              colorStore.useClickUpBackgroundColor ? { backgroundColor: cuBackgroundPrimary } : {}
+            "
           >
             <svg
-              v-if="useClickUpBackgroundColor"
+              v-if="colorStore.useClickUpBackgroundColor"
               class="custom-checkbox-checkmark"
               width="20"
               height="20"
@@ -208,14 +148,18 @@ if (typeof window !== 'undefined') {
       <!-- Reset button removed: now only in parent -->
     </div>
 
-    <div class="color-picker-wrapper" v-show="!useClickUpTextColor || !useClickUpBackgroundColor">
+    <div
+      class="color-picker-wrapper"
+      v-show="!colorStore.useClickUpTextColor || !colorStore.useClickUpBackgroundColor"
+    >
       <!-- No debug button in the basic implementation -->
 
-      <div class="text-picker-wrapper" v-show="!useClickUpTextColor">
+      <div class="text-picker-wrapper" v-show="!colorStore.useClickUpTextColor">
         <label for="text-picker">Text</label>
         <color-input
           id="text-picker"
-          v-model="textColor"
+          v-model="colorStore.textColor"
+          @change="debouncedSetColors(colorStore.backgroundColor, colorStore.textColor)"
           popover-to="right"
           format="hex"
           custom-class="color-picker-text"
@@ -224,11 +168,12 @@ if (typeof window !== 'undefined') {
         />
       </div>
 
-      <div class="bg-picker-wrapper" v-show="!useClickUpBackgroundColor">
+      <div class="bg-picker-wrapper" v-show="!colorStore.useClickUpBackgroundColor">
         <label for="background-picker">Background</label>
         <color-input
           id="background-picker"
-          v-model="backgroundColor"
+          v-model="colorStore.backgroundColor"
+          @change="debouncedSetColors(colorStore.backgroundColor, colorStore.textColor)"
           popover-to="right"
           format="hex"
           custom-class="color-picker-background"
@@ -299,11 +244,14 @@ if (typeof window !== 'undefined') {
   align-items: center;
   gap: 0.5em;
 }
+/* Keep input in tab order and allow focus ring */
 .custom-checkbox-input {
   position: absolute;
   opacity: 0;
-  width: 0;
-  height: 0;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  z-index: 2;
 }
 .custom-checkbox-label {
   display: flex;
@@ -326,10 +274,16 @@ if (typeof window !== 'undefined') {
     border 0.2s;
   box-sizing: border-box;
 }
-/* .custom-checkbox-input:focus + .custom-checkbox-label .custom-checkbox-box {
+.custom-checkbox-input:focus + .custom-checkbox-label .custom-checkbox-box {
   outline: 2px solid var(--color-primary, #2097f3);
   outline-offset: 2px;
-} */
+}
+/* Focus ring for color input fields */
+.color-picker-text:focus,
+.color-picker-background:focus {
+  outline: 2px solid var(--color-primary, #2097f3);
+  outline-offset: 2px;
+}
 .custom-checkbox-checkmark {
   display: block;
 }

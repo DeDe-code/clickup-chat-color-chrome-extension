@@ -108,18 +108,22 @@ onMounted(() => {
       'cuBackgroundPrimary',
       'umcTheme',
       'umcManualTheme',
+      'useClickUpTextColor',
+      'useClickUpBackgroundColor',
     ],
     ({
-      backgroundColor,
-      textColor,
       cuContentPrimary: cuTxt,
       cuBackgroundPrimary: cuBg,
       umcTheme,
+      useClickUpTextColor,
+      useClickUpBackgroundColor,
       // umcManualTheme,
     }) => {
-      if (backgroundColor && textColor) {
-        colorStore.setColors(backgroundColor, textColor)
-      }
+      // Always default to using ClickUp theme colors (checkboxes checked)
+      colorStore.useClickUpTextColor =
+        useClickUpTextColor !== undefined ? useClickUpTextColor : true
+      colorStore.useClickUpBackgroundColor =
+        useClickUpBackgroundColor !== undefined ? useClickUpBackgroundColor : true
       if (cuTxt) cuContentPrimary.value = cuTxt
       if (cuBg) cuBackgroundPrimary.value = cuBg
       if (umcTheme && umcTheme !== 'system') {
@@ -170,17 +174,26 @@ function sendMessageToContentScript(bg, txt) {
 // Use only the effective color values from ColorManager
 let effectiveBackground = ref('var(--cu-background-primary)')
 let effectiveText = ref('var(--cu-content-primary)')
-
-function handleColorsChanged({ backgroundColor: bg, textColor: txt }) {
-  colorStore.setColors(bg, txt)
-  chrome.storage.local.set({
-    backgroundColor: bg,
-    textColor: txt,
-  })
-  effectiveBackground.value = resolveCssVariable(bg)
-  effectiveText.value = resolveCssVariable(txt)
-  sendMessageToContentScript(bg, txt)
-}
+watch(
+  () => [
+    colorStore.backgroundColor,
+    colorStore.textColor,
+    colorStore.useClickUpTextColor,
+    colorStore.useClickUpBackgroundColor,
+  ],
+  ([bg, txt, useTxt, useBg]) => {
+    const effectiveBg = useBg ? 'var(--cu-background-primary)' : bg
+    const effectiveTxt = useTxt ? 'var(--cu-content-primary)' : txt
+    effectiveBackground.value = resolveCssVariable(effectiveBg)
+    effectiveText.value = resolveCssVariable(effectiveTxt)
+    chrome.storage.local.set({
+      backgroundColor: effectiveBg,
+      textColor: effectiveTxt,
+    })
+    sendMessageToContentScript(effectiveBg, effectiveTxt)
+  },
+  { deep: true },
+)
 
 const colorManagerKey = ref(0)
 
@@ -229,7 +242,7 @@ const DEFAULT_THEME = 'system'
       </select>
     </div>
     <div v-if="isReady" class="color-picker-wrapper">
-      <ColorManager :key="colorManagerKey" @colorsChanged="handleColorsChanged" />
+      <ColorManager :key="colorManagerKey" />
       <ColorPreview :backgroundColor="effectiveBackground" :textColor="effectiveText" />
       <div class="reset-btn-row">
         <button class="reset-default-btn" @click="handleReset">Reset Default Colors</button>
@@ -269,7 +282,9 @@ const DEFAULT_THEME = 'system'
 }
 
 .theme-selector:focus {
-  outline: none;
+  outline: 2px solid var(--color-primary, #2097f3);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-primary, #2097f3);
 }
 
 .theme-selector:hover {
@@ -307,7 +322,7 @@ const DEFAULT_THEME = 'system'
   padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--color-danger);
   color: var(--color-white);
-  border: none;
+  /* border: none; */
   border-radius: var(--border-radius-sm);
   cursor: pointer;
   transition: background-color 0.3s;
@@ -315,5 +330,10 @@ const DEFAULT_THEME = 'system'
 
 .reset-default-btn:hover {
   background-color: var(--color-danger-dark);
+}
+.reset-default-btn:focus {
+  outline: 2px solid var(--color-primary, #2097f3);
+  /* outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--color-primary, #2097f3); */
 }
 </style>

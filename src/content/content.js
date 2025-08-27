@@ -15,93 +15,68 @@ if (window.clickupHighlighterInitialized) {
   console.log('User agent:', navigator.userAgent)
   console.log('Document ready state:', document.readyState)
 
-  // ⚡ EMERGENCY TEST: Create a highly visible test element to confirm script loading
-  function createTestElement() {
-    const testDiv = document.createElement('div')
-    testDiv.id = 'clickup-highlighter-test'
-    testDiv.style.cssText = `
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #ff0000;
-      color: #ffffff;
-      padding: 10px;
-      border-radius: 5px;
-      z-index: 999999;
-      font-family: Arial;
-      font-size: 14px;
-      font-weight: bold;
-      border: 2px solid #ffffff;
-    `
-    testDiv.textContent = '🔥 ClickUp Extender LOADED!'
-    document.body.appendChild(testDiv)
-
-    // Remove after 5 seconds
-    setTimeout(() => {
-      testDiv.remove()
-    }, 5000)
-
-    console.log('🔥 Test element created and will be visible for 5 seconds')
-  }
-
-  // Create test element immediately
-  createTestElement()
-
-  // ⚡ EMERGENCY MANUAL TEST: Add keyboard shortcut to force highlighting
-  document.addEventListener('keydown', function (event) {
-    // Press Ctrl+Shift+H to manually trigger highlighting
-    if (event.ctrlKey && event.shiftKey && event.key === 'H') {
-      console.log('🔥 Manual highlight test triggered!')
-
-      // Force bright highlighting on ALL elements that could be unread
-      const testStyle = document.createElement('style')
-      testStyle.id = 'manual-test-style'
-      testStyle.textContent = `
-        /* MANUAL TEST: Highlight chat channel elements specifically */
-        [class*="channel"],
-        [class*="chat"],
-        [class*="conversation"],
-        .cu-sidebar-nav-item,
-        .cu-sidebar-nav-list-item,
-        [class*="sidebar"][class*="nav"],
-        [data-test*="channel"],
-        [data-test*="chat"],
-        /* Also show all unread elements for comparison */
-        [class*="unread"],
-        [class*="notification"] {
-          background-color: #ff00ff !important;
-          color: #00ff00 !important;
-          border: 3px solid #ffff00 !important;
-          animation: pulse 1s infinite !important;
-        }
-
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `
-
-      // Remove existing test style
-      const existing = document.getElementById('manual-test-style')
-      if (existing) existing.remove()
-
-      // Add new test style
-      document.head.appendChild(testStyle)
-
-      console.log(
-        '🎨 Manual test style applied! Check for bright pink/green chat channel elements.',
-      )
-
-      // Remove after 10 seconds
-      setTimeout(() => {
-        testStyle.remove()
-        console.log('🔥 Manual test style removed')
-      }, 10000)
-    }
-  })
-
-  console.log('💡 Tip: Press Ctrl+Shift+H on ClickUp to manually test highlighting')
+  // Uncomment the following block for development/debug only:
+  // const DEBUG = false;
+  // if (DEBUG) {
+  //   function createTestElement() {
+  //     const testDiv = document.createElement('div')
+  //     testDiv.id = 'clickup-highlighter-test'
+  //     testDiv.style.cssText = `
+  //       position: fixed;
+  //       top: 10px;
+  //       right: 10px;
+  //       background: #ff0000;
+  //       color: #ffffff;
+  //       padding: 10px;
+  //       border-radius: 5px;
+  //       z-index: 999999;
+  //       font-family: Arial;
+  //       font-size: 14px;
+  //       font-weight: bold;
+  //       border: 2px solid #ffffff;
+  //     `
+  //     testDiv.textContent = '🔥 ClickUp Extender LOADED!'
+  //     document.body.appendChild(testDiv)
+  //     setTimeout(() => { testDiv.remove() }, 5000)
+  //     console.log('🔥 Test element created and will be visible for 5 seconds')
+  //   }
+  //   createTestElement();
+  //   document.addEventListener('keydown', function (event) {
+  //     if (event.ctrlKey && event.shiftKey && event.key === 'H') {
+  //       console.log('🔥 Manual highlight test triggered!')
+  //       const testStyle = document.createElement('style')
+  //       testStyle.id = 'manual-test-style'
+  //       testStyle.textContent = `
+  //         [class*="channel"],
+  //         [class*="chat"],
+  //         [class*="conversation"],
+  //         .cu-sidebar-nav-item,
+  //         .cu-sidebar-nav-list-item,
+  //         [class*="sidebar"][class*="nav"],
+  //         [data-test*="channel"],
+  //         [data-test*="chat"],
+  //         [class*="unread"],
+  //         [class*="notification"] {
+  //           background-color: #ff00ff !important;
+  //           color: #00ff00 !important;
+  //           border: 3px solid #ffff00 !important;
+  //           animation: pulse 1s infinite !important;
+  //         }
+  //         @keyframes pulse {
+  //           0% { opacity: 1; }
+  //           50% { opacity: 0.5; }
+  //           100% { opacity: 1; }
+  //         }
+  //       `;
+  //       const existing = document.getElementById('manual-test-style')
+  //       if (existing) existing.remove()
+  //       document.head.appendChild(testStyle)
+  //       console.log('🎨 Manual test style applied! Check for bright pink/green chat channel elements.')
+  //       setTimeout(() => { testStyle.remove(); console.log('🔥 Manual test style removed') }, 10000)
+  //     }
+  //   });
+  //   console.log('💡 Tip: Press Ctrl+Shift+H on ClickUp to manually test highlighting')
+  // }
 
   // Add debugging function to understand ClickUp's DOM structure
   function debugClickUpStructure() {
@@ -164,9 +139,9 @@ if (window.clickupHighlighterInitialized) {
     return false
   })
 
-  // Default colors that will be overridden by storage values if available
-  let currentBackground = '#fe5722'
-  let currentText = '#2097f3'
+  // Default colors: use ClickUp theme CSS variables
+  let currentBackground = 'var(--cu-background-primary)'
+  let currentText = 'var(--cu-content-primary)'
   let currentBorderRadius = '2rem'
 
   // Load saved colors from Chrome storage immediately
@@ -182,8 +157,24 @@ if (window.clickupHighlighterInitialized) {
     applyStandardUnreadStyles(currentBackground, currentText)
   })
 
+  // Helper: resolve CSS variable to actual color value
+  function resolveCssVar(value) {
+    if (typeof value === 'string' && value.startsWith('var(')) {
+      const varName = value.match(/var\((--[^)]+)\)/)
+      if (varName && varName[1]) {
+        return (
+          getComputedStyle(document.documentElement).getPropertyValue(varName[1]).trim() || value
+        )
+      }
+    }
+    return value
+  }
+
   // Create and inject CSS styles instead of applying inline styles
   function createTargetedStyles(bg = currentBackground, txt = currentText) {
+    // Always resolve CSS variables to actual color values
+    const resolvedBg = resolveCssVar(bg)
+    const resolvedTxt = resolveCssVar(txt)
     // Remove existing style element if it exists
     const existingStyle = document.getElementById('clickup-highlighter-styles')
     if (existingStyle) {
@@ -208,8 +199,8 @@ if (window.clickupHighlighterInitialized) {
       [class*="nav"][class*="item"].has-unread[class*="chat"],
       [data-test*="channel"].has-unread,
       [data-test*="chat"].has-unread {
-        background-color: ${bg} !important;
-        color: ${txt} !important;
+        background-color: ${resolvedBg} !important;
+        color: ${resolvedTxt} !important;
         border-radius: ${currentBorderRadius} !important;
         padding: 0.3rem !important;
         transition: background-color 0.3s, color 0.3s !important;
@@ -224,7 +215,7 @@ if (window.clickupHighlighterInitialized) {
       [class*="sidebar"][class*="nav"].has-unread [class*="text"],
       [class*="nav"][class*="item"].has-unread[class*="channel"] [class*="text"],
       [class*="nav"][class*="item"].has-unread[class*="chat"] [class*="text"] {
-        color: ${txt} !important;
+        color: ${resolvedTxt} !important;
       }
 
       /* Target icons within unread chat channels */
@@ -236,7 +227,7 @@ if (window.clickupHighlighterInitialized) {
       [class*="sidebar"][class*="nav"].has-unread [class*="icon"],
       [class*="nav"][class*="item"].has-unread[class*="channel"] [class*="icon"],
       [class*="nav"][class*="item"].has-unread[class*="chat"] [class*="icon"] {
-        color: ${txt} !important;
+        color: ${resolvedTxt} !important;
         transition: color 0.3s !important;
       }
 
@@ -249,7 +240,7 @@ if (window.clickupHighlighterInitialized) {
       [class*="sidebar"][class*="nav"].has-unread [class*="dot"],
       [class*="nav"][class*="item"].has-unread[class*="channel"] [class*="badge"],
       [class*="nav"][class*="item"].has-unread[class*="chat"] [class*="dot"] {
-        background-color: ${txt} !important;
+        background-color: ${resolvedTxt} !important;
       }
 
       /* Exclude tasks, docs, and other non-chat elements explicitly */
@@ -402,54 +393,70 @@ if (window.clickupHighlighterInitialized) {
     }
   })
 
-  // ✅ Observe changes to reapply styles when new unread chat channels appear
-  const globalObserver = new MutationObserver((mutations) => {
-    let shouldReapplyStyles = false
+  // Debounce utility
+  function debounce(fn, delay) {
+    let timer
+    return function (...args) {
+      clearTimeout(timer)
+      timer = setTimeout(() => fn.apply(this, args), delay)
+    }
+  }
+  const applyStylesDebounced = debounce(applyStandardUnreadStyles, 200)
 
-    mutations.forEach((mutation) => {
-      // Check if any chat channel elements with 'has-unread' class were added or modified
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === 1) {
-            // Element node - check for chat channel related elements
-            if (
-              node.classList?.contains('has-unread') ||
-              node.querySelector?.('.has-unread') ||
-              (node.className &&
-                (node.className.includes('channel') ||
-                  node.className.includes('chat') ||
-                  node.className.includes('conversation') ||
-                  node.className.includes('sidebar-nav')))
-            ) {
-              shouldReapplyStyles = true
+  // Find the main chat channel container (update selector as needed)
+  function getChatContainer() {
+    return document.querySelector('.cu-sidebar-nav-list, [class*="chat-list"], [class*="sidebar"]')
+  }
+
+  // Only observe chat container for mutations
+  function setupChatObserver() {
+    const chatContainer = getChatContainer()
+    if (!chatContainer) return
+    const globalObserver = new MutationObserver((mutations) => {
+      let shouldReapplyStyles = false
+      mutations.forEach((mutation) => {
+        // Only process childList or attribute changes relevant to chat channels
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) {
+              if (
+                node.classList?.contains('has-unread') ||
+                node.querySelector?.('.has-unread') ||
+                (node.className &&
+                  (node.className.includes('channel') ||
+                    node.className.includes('chat') ||
+                    node.className.includes('conversation') ||
+                    node.className.includes('sidebar-nav')))
+              ) {
+                shouldReapplyStyles = true
+              }
             }
+          })
+        } else if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const el = mutation.target
+          if (
+            el.classList?.contains('has-unread') &&
+            (el.className.includes('channel') ||
+              el.className.includes('chat') ||
+              el.className.includes('conversation') ||
+              el.className.includes('sidebar-nav'))
+          ) {
+            shouldReapplyStyles = true
           }
-        })
-      } else if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        const el = mutation.target
-        // Only trigger for chat channel related elements
-        if (
-          el.classList?.contains('has-unread') &&
-          (el.className.includes('channel') ||
-            el.className.includes('chat') ||
-            el.className.includes('conversation') ||
-            el.className.includes('sidebar-nav'))
-        ) {
-          shouldReapplyStyles = true
         }
+      })
+      if (shouldReapplyStyles) {
+        applyStylesDebounced()
       }
     })
+    globalObserver.observe(chatContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+  }
 
-    // Only reapply styles if we detected relevant chat channel changes
-    if (shouldReapplyStyles) {
-      applyStandardUnreadStyles()
-    }
-  })
-
-  globalObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class'],
-  })
+  // Setup observer on initial load and after navigation
+  setupChatObserver()
 } // End of initialization check
