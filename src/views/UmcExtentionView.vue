@@ -3,8 +3,15 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useColorStore } from '../stores/ColorStore.js'
+import { useTheme } from '../composables/useTheme.js'
+import { useChromeStorage } from '../composables/useChromeStorage.js'
+import { useContentScriptMessaging } from '../composables/useContentScriptMessaging.js'
 import ColorManager from '../components/ColorManager.vue'
 import ColorPreview from '../components/ColorPreview.vue'
+import ThemeSelector from '../components/ThemeSelector.vue'
+import ResetButton from '../components/ResetButton.vue'
+// import Header from '../components/Header.vue'
+import Footer from '../components/Footer.vue'
 
 const colorStore = useColorStore()
 const { backgroundColor, textColor } = storeToRefs(colorStore)
@@ -12,20 +19,10 @@ const { backgroundColor, textColor } = storeToRefs(colorStore)
 const isReady = ref(false)
 const cuContentPrimary = ref('#2097f3')
 const cuBackgroundPrimary = ref('#fe5722')
-const theme = ref('system') // 'system', 'light', 'dark'
+const { theme, applyTheme } = useTheme()
+const { getStorage, setStorage } = useChromeStorage()
+const { sendMessageToContentScript } = useContentScriptMessaging()
 
-// Load theme preference from Chrome storage
-chrome.storage.local.get(['theme'], (result) => {
-  if (result.theme) {
-    theme.value = result.theme
-    applyTheme(theme.value)
-  }
-})
-
-// Watch for theme changes and save to Chrome storage
-watch(theme, (newTheme) => {
-  chrome.storage.local.set({ theme: newTheme })
-})
 // const manualTheme = ref('light') // 'light' or 'dark'
 
 // Load ClickUp theme variables from storage
@@ -52,56 +49,9 @@ function resolveCssVariable(colorValue) {
   return colorValue
 }
 
-function applyTheme(newTheme) {
-  let target = document.documentElement
-  document.body.removeAttribute('data-theme')
-  if (newTheme === 'system') {
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    target.setAttribute('data-theme', isDark ? 'dark' : 'light')
-    // Listen for system changes only in system mode
-    setupSystemThemeWatcher()
-  } else {
-    target.setAttribute('data-theme', newTheme)
-    // Remove system watcher if not in system mode
-    if (mediaQueryList) {
-      mediaQueryList.removeEventListener('change', handleSystemThemeChange)
-      mediaQueryList = null
-    }
-  }
-  // Log out the element and its computed background and color
-  const body = document.body
-  const bg = getComputedStyle(body).backgroundColor
-  const color = getComputedStyle(body).color
-  console.log('Theme applied to:', target, 'Body bg:', bg, 'Body color:', color)
-}
-
-// Watch for browser theme changes if theme is 'system'
-let mediaQueryList = null
-function setupSystemThemeWatcher() {
-  if (mediaQueryList) {
-    mediaQueryList.removeEventListener('change', handleSystemThemeChange)
-  }
-  mediaQueryList = window.matchMedia('(prefers-color-scheme: dark)')
-  mediaQueryList.addEventListener('change', handleSystemThemeChange)
-}
-function handleSystemThemeChange(e) {
-  if (theme.value === 'system') {
-    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light')
-  }
-}
-
-watch(theme, (newTheme) => {
-  console.log('Theme changed to:', newTheme)
-  applyTheme(newTheme)
-  chrome.storage.local.set({ umcTheme: newTheme })
-})
-
-onMounted(() => {
-  // Default: inherit system theme
-  theme.value = 'system'
-  applyTheme('system')
-  chrome.storage.local.get(
-    [
+onMounted(async () => {
+  try {
+    const result = await getStorage([
       'backgroundColor',
       'textColor',
       'cuContentPrimary',
@@ -110,64 +60,50 @@ onMounted(() => {
       'umcManualTheme',
       'useClickUpTextColor',
       'useClickUpBackgroundColor',
-    ],
-    ({
+    ])
+    const {
       cuContentPrimary: cuTxt,
       cuBackgroundPrimary: cuBg,
       umcTheme,
       useClickUpTextColor,
       useClickUpBackgroundColor,
       // umcManualTheme,
-    }) => {
-      // Always default to using ClickUp theme colors (checkboxes checked)
-      colorStore.useClickUpTextColor =
-        useClickUpTextColor !== undefined ? useClickUpTextColor : true
-      colorStore.useClickUpBackgroundColor =
-        useClickUpBackgroundColor !== undefined ? useClickUpBackgroundColor : true
-      if (cuTxt) cuContentPrimary.value = cuTxt
-      if (cuBg) cuBackgroundPrimary.value = cuBg
-      if (umcTheme && umcTheme !== 'system') {
-        theme.value = umcTheme
-        applyTheme(umcTheme)
-      }
-      setupSystemThemeWatcher()
-      isReady.value = true
-    },
-  )
+    } = result
+    // Always default to using ClickUp theme colors (checkboxes checked)
+    colorStore.useClickUpTextColor = useClickUpTextColor !== undefined ? useClickUpTextColor : true
+    colorStore.useClickUpBackgroundColor =
+      useClickUpBackgroundColor !== undefined ? useClickUpBackgroundColor : true
+    if (cuTxt) cuContentPrimary.value = cuTxt
+    if (cuBg) cuBackgroundPrimary.value = cuBg
+    if (umcTheme && umcTheme !== 'system') {
+      theme.value = umcTheme
+      applyTheme(umcTheme)
+    }
+    isReady.value = true
+  } catch (e) {
+    console.error('Failed to load storage:', e)
+    isReady.value = true
+  }
 })
 
 // Send message directly to the content script
-function sendMessageToContentScript(bg, txt) {
-  // Get all active tabs with the ClickUp URL
-  chrome.tabs.query({ url: 'https://app.clickup.com/*' }, (tabs) => {
-    if (tabs.length === 0) {
-      console.log('No ClickUp tabs found')
-      return
-    }
-
-    // Send message to all ClickUp tabs
-    tabs.forEach((tab) => {
-      chrome.tabs.sendMessage(
-        tab.id,
-        {
-          action: 'updateColors',
-          backgroundColor: bg,
-          textColor: txt,
-        },
-        (response) => {
-          // Handle the response from the content script
-          if (chrome.runtime.lastError) {
-            console.error('Error sending message:', chrome.runtime.lastError)
-            return
-          }
-
-          if (response && response.success) {
-            console.log('Colors updated in ClickUp tab:', tab.id)
-          }
-        },
-      )
+async function updateClickUpColors(bg, txt) {
+  try {
+    const responses = await sendMessageToContentScript({
+      action: 'updateColors',
+      backgroundColor: bg,
+      textColor: txt,
     })
-  })
+    responses.forEach(({ tabId, response }) => {
+      if (response && response.success) {
+        console.log('Colors updated in ClickUp tab:', tabId)
+      }
+    })
+  } catch (errors) {
+    errors.forEach(({ tabId, error }) => {
+      console.error('Error sending message to tab', tabId, error)
+    })
+  }
 }
 
 // Remove previewBackground and previewText refs and computed
@@ -186,11 +122,11 @@ watch(
     const effectiveTxt = useTxt ? 'var(--cu-content-primary)' : txt
     effectiveBackground.value = resolveCssVariable(effectiveBg)
     effectiveText.value = resolveCssVariable(effectiveTxt)
-    chrome.storage.local.set({
+    setStorage({
       backgroundColor: effectiveBg,
       textColor: effectiveTxt,
     })
-    sendMessageToContentScript(effectiveBg, effectiveTxt)
+    updateClickUpColors(effectiveBg, effectiveTxt)
   },
   { deep: true },
 )
@@ -210,7 +146,7 @@ const handleReset = () => {
   cuContentPrimary.value = clickUpTextColor
   cuBackgroundPrimary.value = clickUpBackgroundColor
   // Reset Chrome storage (including checkboxes)
-  chrome.storage.local.set({
+  setStorage({
     backgroundColor: clickUpBackgroundColor,
     textColor: clickUpTextColor,
     cuContentPrimary: clickUpTextColor,
@@ -223,7 +159,7 @@ const handleReset = () => {
     useClickUpBackgroundColor: true,
   })
   // Notify content script to update colors immediately
-  sendMessageToContentScript(clickUpBackgroundColor, clickUpTextColor)
+  updateClickUpColors(clickUpBackgroundColor, clickUpTextColor)
   // Force ColorManager to re-mount and reload checkbox state
   colorManagerKey.value++
 }
@@ -233,24 +169,19 @@ const DEFAULT_THEME = 'system'
 
 <template>
   <main class="extension-wrapper">
-    <div class="theme-selector-wrapper">
-      <label for="theme-select">Appearance</label>
-      <select id="theme-select" v-model="theme" @change="applyTheme(theme)" class="theme-selector">
-        <option value="system">System</option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-    </div>
+    <!-- <Header /> -->
+    <ThemeSelector v-model="theme" @update:modelValue="applyTheme" />
     <div v-if="isReady" class="color-picker-wrapper">
       <ColorManager :key="colorManagerKey" />
       <ColorPreview :backgroundColor="effectiveBackground" :textColor="effectiveText" />
       <div class="reset-btn-row">
-        <button class="reset-default-btn" @click="handleReset">Reset Default Colors</button>
+        <ResetButton @click="handleReset">Reset Default Colors</ResetButton>
       </div>
     </div>
     <div v-else class="loading-wrapper flex items-center justify-center h-32 text-lg font-semibold">
       loading...
     </div>
+    <Footer />
   </main>
 </template>
 

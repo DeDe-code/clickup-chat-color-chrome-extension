@@ -1,9 +1,11 @@
 <script setup>
 /* global chrome */
 import { useColorStore } from '@/stores/ColorStore.js'
+import Checkbox from './Checkbox.vue'
 const colorStore = useColorStore()
 
 import { ref } from 'vue'
+import { useMutationObserver } from '../composables/useMutationObserver.js'
 
 // Debounce utility
 function debounce(fn, delay) {
@@ -17,9 +19,7 @@ function debounce(fn, delay) {
 const debouncedSetColors = debounce((bg, txt) => {
   colorStore.setColors(bg, txt)
 }, 300)
-import ColorInput from 'vue-color-input'
-// Import the CSS directly from node_modules
-import '../assets/vue-color-input.css'
+import ColorPicker from './ColorPicker.vue'
 
 console.log('ColorManager.vue loaded')
 // Simple function to handle color picker open/close
@@ -49,134 +49,76 @@ chrome.storage.local.get(['cuBackgroundPrimary', 'cuContentPrimary'], (result) =
 })
 
 // --- MutationObserver for Cancel Button Injection ---
-if (typeof window !== 'undefined') {
-  const observer = new MutationObserver(() => {
-    const popups = document.querySelectorAll('.color-input__popup')
-    popups.forEach((popup) => {
-      if (!popup.querySelector('.color-input__popup-cancel-btn')) {
-        const btn = document.createElement('button')
-        btn.className = 'color-input__popup-cancel-btn'
-        btn.type = 'button'
-        btn.textContent = 'Cancel'
-        btn.onclick = (e) => {
-          e.stopPropagation()
-          const closeBtn = popup.querySelector('.color-input__close, .v-color-input__close')
-          if (closeBtn) closeBtn.click()
-          else popup.style.display = 'none'
-        }
-        popup.appendChild(btn)
+const bodyRef = ref(null)
+onMounted(() => {
+  bodyRef.value = document.body
+})
+useMutationObserver(bodyRef, () => {
+  const popups = document.querySelectorAll('.color-input__popup')
+  popups.forEach((popup) => {
+    if (!popup.querySelector('.color-input__popup-cancel-btn')) {
+      const btn = document.createElement('button')
+      btn.className = 'color-input__popup-cancel-btn'
+      btn.type = 'button'
+      btn.textContent = 'Cancel'
+      btn.onclick = (e) => {
+        e.stopPropagation()
+        const closeBtn = popup.querySelector('.color-input__close, .v-color-input__close')
+        if (closeBtn) closeBtn.click()
+        else popup.style.display = 'none'
       }
-    })
+      popup.appendChild(btn)
+    }
   })
-  observer.observe(document.body, { childList: true, subtree: true })
-}
+})
 </script>
 
 <template>
   <div class="color-manager">
     <div class="clickup-theme-toggle">
-      <div class="clickup-text-toggle custom-checkbox-wrapper">
-        <input
-          type="checkbox"
+      <div class="clickup-text-toggle">
+        <Checkbox
           id="cu-theme"
-          :checked="colorStore.useClickUpTextColor"
-          @change="colorStore.setUseClickUpTextColor($event.target.checked)"
-          class="custom-checkbox-input"
+          :modelValue="colorStore.useClickUpTextColor"
+          :label="'Use ClickUp primary content color'"
+          :color="cuContentPrimary"
+          @update:modelValue="colorStore.setUseClickUpTextColor"
         />
-        <label for="cu-theme" class="custom-checkbox-label">
-          <span
-            class="custom-checkbox-box"
-            :style="colorStore.useClickUpTextColor ? { backgroundColor: cuContentPrimary } : {}"
-          >
-            <svg
-              v-if="colorStore.useClickUpTextColor"
-              class="custom-checkbox-checkmark"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5 10.5L9 14.5L15 7.5"
-                stroke="white"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <span class="custom-checkbox-text">Use ClickUp primary content color</span>
-        </label>
       </div>
-      <div class="clickup-bg-toggle custom-checkbox-wrapper">
-        <input
-          type="checkbox"
+      <div class="clickup-bg-toggle">
+        <Checkbox
           id="cu-bg"
-          :checked="colorStore.useClickUpBackgroundColor"
-          @change="colorStore.setUseClickUpBackgroundColor($event.target.checked)"
-          class="custom-checkbox-input"
+          :modelValue="colorStore.useClickUpBackgroundColor"
+          :label="'Use ClickUp primary background color'"
+          :color="cuBackgroundPrimary"
+          @update:modelValue="colorStore.setUseClickUpBackgroundColor"
         />
-        <label for="cu-bg" class="custom-checkbox-label">
-          <span
-            class="custom-checkbox-box"
-            :style="
-              colorStore.useClickUpBackgroundColor ? { backgroundColor: cuBackgroundPrimary } : {}
-            "
-          >
-            <svg
-              v-if="colorStore.useClickUpBackgroundColor"
-              class="custom-checkbox-checkmark"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5 10.5L9 14.5L15 7.5"
-                stroke="white"
-                stroke-width="2.2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </span>
-          <span class="custom-checkbox-text">Use ClickUp primary background color</span>
-        </label>
       </div>
-      <!-- Reset button removed: now only in parent -->
     </div>
 
     <div
       class="color-picker-wrapper"
       v-show="!colorStore.useClickUpTextColor || !colorStore.useClickUpBackgroundColor"
     >
-      <!-- No debug button in the basic implementation -->
-
       <div class="text-picker-wrapper" v-show="!colorStore.useClickUpTextColor">
-        <label for="text-picker">Text</label>
-        <color-input
+        <ColorPicker
           id="text-picker"
-          v-model="colorStore.textColor"
-          @change="debouncedSetColors(colorStore.backgroundColor, colorStore.textColor)"
-          popover-to="right"
-          format="hex"
-          custom-class="color-picker-text"
+          label="Text"
+          :modelValue="colorStore.textColor"
+          customClass="color-picker-text"
+          @update:modelValue="(val) => debouncedSetColors(colorStore.backgroundColor, val)"
           @popover-open="handlePopoverOpen"
           @popover-close="handlePopoverClose"
         />
       </div>
 
       <div class="bg-picker-wrapper" v-show="!colorStore.useClickUpBackgroundColor">
-        <label for="background-picker">Background</label>
-        <color-input
+        <ColorPicker
           id="background-picker"
-          v-model="colorStore.backgroundColor"
-          @change="debouncedSetColors(colorStore.backgroundColor, colorStore.textColor)"
-          popover-to="right"
-          format="hex"
-          custom-class="color-picker-background"
+          label="Background"
+          :modelValue="colorStore.backgroundColor"
+          customClass="color-picker-background"
+          @update:modelValue="(val) => debouncedSetColors(val, colorStore.textColor)"
           @popover-open="handlePopoverOpen"
           @popover-close="handlePopoverClose"
         />
