@@ -177,12 +177,3 @@ npm run lint
 - Scroll-down arrow appears when color picker is open and not visible
 
 ---
-
-## Screenshots
-
-Below are key screenshots showing the extension in action:
-
-![Main UI - System Theme](./screenshots/main-system-theme.png)
-![Main UI - Custom Colors](./screenshots/main-custom-colors.png)
-![Color Picker Popup](./screenshots/color-picker-popup.png)
-![Main UI - Light Theme](./screenshots/main-light-theme.png)
