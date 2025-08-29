@@ -10,8 +10,6 @@ import ColorManager from '../components/ColorManager.vue'
 import ColorPreview from '../components/ColorPreview.vue'
 import ThemeSelector from '../components/ThemeSelector.vue'
 import ResetButton from '../components/ResetButton.vue'
-// import Header from '../components/Header.vue'
-import Footer from '../components/Footer.vue'
 
 const colorStore = useColorStore()
 const { backgroundColor, textColor } = storeToRefs(colorStore)
@@ -169,7 +167,6 @@ const DEFAULT_THEME = 'system'
 
 <template>
   <main class="extension-wrapper">
-    <!-- <Header /> -->
     <ThemeSelector v-model="theme" @update:modelValue="applyTheme" />
     <div v-if="isReady" class="color-picker-wrapper">
       <ColorManager :key="colorManagerKey" />
@@ -181,7 +178,6 @@ const DEFAULT_THEME = 'system'
     <div v-else class="loading-wrapper flex items-center justify-center h-32 text-lg font-semibold">
       loading...
     </div>
-    <Footer />
   </main>
 </template>
 

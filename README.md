@@ -1,110 +1,188 @@
-# ClickUp Extender Chrome Extension
+# ClickUp Chat Channel Color Extension
 
-A Chrome extension built with Vue 3 and Vite to extend ClickUp functionality with message highlighting and enhanced features.
+![Main UI - System Theme](./screenshots/main-system-theme.png)
+![Main UI - Custom Colors](./screenshots/main-custom-colors.png)
+![Color Picker Popup](./screenshots/color-picker-popup.png)
+![Main UI - Light Theme](./screenshots/main-light-theme.png)
 
-## Features
+## Overview
 
-- Highlights unread messages in ClickUp
-- Customizable text and background colors
-- Light/dark/system theme support
-- Color picker for easy customization
+This Chrome extension enhances ClickUp by allowing users to customize chat channel colors for unread messages. It provides a modern, accessible UI for color selection, theme switching, and instant preview, making ClickUp more visually organized and user-friendly.
 
-## Development Setup
+---
 
-### Prerequisites
+## Purpose & Goals
 
-- Node.js (v16+)
-- npm or yarn
-- Chrome browser
+- **Purpose:**
 
-### Installation
+  - Empower users to visually highlight unread messages in ClickUp chat channels.
+  - Provide full control over text and background colors for improved accessibility and personal preference.
+  - Support light, dark, and system themes for seamless integration with user environments.
 
-```bash
+- **Goals:**
+  - Deliver a robust, maintainable, and secure Chrome extension using modern web technologies.
+  - Ensure accessibility, usability, and a professional look suitable for portfolio and real-world use.
+
+---
+
+## What I Learned
+
+- **Vue 3 & Composition API:** Modular component design, composables for logic reuse, and state management with Pinia.
+- **Chrome Extension APIs:** Storage, messaging, and content script integration for persistent and dynamic UI changes.
+- **Accessibility:** Focus management, visible focus rings, input-in-label patterns, and keyboard navigation.
+- **Atomic Design:** Breaking UI into small, reusable components for maintainability and scalability.
+- **MutationObserver:** Dynamic DOM manipulation for popup integration and cancel logic.
+- **Testing & Debugging:** Iterative development, trn-system-oubleshooting build and runtime issues, and validating UX improvements.
+
+---
+
+## Architecture & Tech Stack
+
+- **Vue 3** (Composition API)
+- **Vite** (fast development/build)
+- **Pinia** (state management)
+- **Chrome Storage API** (persistent settings)
+- **Custom CSS** (theme, accessibility, responsive design)
+- **vue-color-input** (color picker component)
+- **MutationObserver** (dynamic popup logic)
+- **Content Script** (content.js for DOM updates)
+
+---
+
+## Project Structure
+
+```
+├── public/
+│   ├── manifest.json
+│   ├── icon.png, favicon.ico, ...
+├── src/
+│   ├── App.vue
+│   ├── main.js
+│   ├── assets/
+│   │   ├── base.css, fonts.css, ...
+│   ├── background/
+│   │   └── background.js
+│   ├── components/
+│   │   ├── ColorManager.vue
+│   │   ├── ColorPicker.vue
+│   │   ├── Checkbox.vue
+│   │   ├── ThemeSelector.vue
+│   │   ├── ResetButton.vue
+│   │   ├── ColorPreview.vue
+│   │   ├── Footer.vue
+│   ├── composables/
+│   │   ├── useTheme.js
+│   │   ├── useChromeStorage.js
+│   │   ├── useContentScriptMessaging.js
+│   │   ├── useMutationObserver.js
+│   │   ├── useColorPicker.js
+│   ├── content/
+│   │   └── content.js
+│   ├── router/
+│   │   └── index.js
+│   ├── stores/
+│   │   └── ColorStore.js
+│   ├── views/
+│   │   └── UmcExtentionView.vue
+├── build-utils/
+│   ├── check-content-script.js
+│   ├── copy-content-script.js
+│   ├── post-build.js
+├── package.json
+├── README.md
+```
+
+---
+
+## Component & Composable Details
+
+### Components
+
+- **ColorManager.vue**: Main UI for color selection, checkboxes, and color pickers. Integrates cancel logic and emits events for popup state.
+- **ColorPicker.vue**: Atomic color picker using `vue-color-input`, emits open/close events, supports live preview and cancel.
+- **Checkbox.vue**: Accessible, styled checkbox for toggling ClickUp theme colors.
+- **ThemeSelector.vue**: Dropdown for switching between light, dark, and system themes.
+- **ResetButton.vue**: Resets all colors and settings to ClickUp defaults.
+- **ColorPreview.vue**: Live preview of unread message color based on current settings.
+- **Footer.vue**: Portfolio footer, copyright.
+
+### Composables
+
+- **useTheme.js**: Manages theme switching and applies theme classes.
+- **useChromeStorage.js**: Abstracts Chrome Storage API for persistent settings.
+- **useContentScriptMessaging.js**: Sends messages to content script for live DOM updates.
+- **useMutationObserver.js**: Handles dynamic DOM changes, especially for popup/cancel logic.
+- **useColorPicker.js**: Manages color picker state, syncs with storage, supports reset.
+
+### Content Script
+
+- **content.js**: Injected into ClickUp, applies color styles to unread messages, listens for storage and popup changes, uses MutationObserver for robust DOM updates.
+
+---
+
+## Key NPM Commands
+
+```sh
 # Install dependencies
 npm install
-```
 
-### Development Workflow
-
-```bash
-# Start development server with hot reload
+# Start development server
 npm run dev
 
-# Build and watch for changes (without opening browser)
+# Build and watch for changes (no browser)
 npm run dev:ext
 
-# Start development with Chrome extension auto-reload in browser
+# Start dev with Chrome extension auto-reload
 npm run dev:ext:browser
 
-# Alternative development command (if content.js loading fails)
+# Simple build (if content.js fails)
 npm run dev:ext:simple
 
-# Alternative development command with browser (if content.js loading fails)
+# Simple build with browser
 npm run dev:ext:simple:browser
 
-# Clean build directories and rebuild everything
+# Clean and rebuild everything
 npm run dev:clean
-```
 
-The `dev:ext` command will:
-
-1. Clean the dist directory
-2. Build the extension
-3. Watch for file changes and rebuild
-
-The `dev:ext:browser` command will do all of the above plus: 4. Launch Chrome with the extension loaded 5. Auto-reload the extension when files change
-
-### Troubleshooting
-
-If you encounter a "Could not load javascript 'content.js' for script" error:
-
-1. Try using `npm run dev:ext:simple` (or `npm run dev:ext:simple:browser` if you want to open Chrome) instead, which uses a simpler build process
-2. Run `npm run dev:clean` to clean all build directories and rebuild
-3. Check Chrome extension management page for additional errors
-4. Verify the content script is being built correctly with `npm run check:content`
-
-### Building for Production
-
-```bash
 # Build for production
 npm run build
 
 # Build extension package for distribution
 npm run build:ext
-```
 
-The production build will be in the `dist` folder. The packaged extension will be in `web-ext-artifacts`.
-
-## Architecture
-
-- Vue 3 with Composition API
-- Vite for fast development and optimized builds
-- Custom CSS for styling
-- Pinia for state management
-- Chrome Storage API for persistence
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+# Lint code
 npm run lint
 ```
+
+---
+
+## How It Works
+
+1. **User opens extension popup**
+2. **Selects theme and custom colors**
+3. **ColorManager.vue** manages state, shows color pickers, and emits events
+4. **ColorPicker.vue** allows live color selection, supports cancel/confirm
+5. **Settings are saved to Chrome Storage and sent to content.js**
+6. **content.js** applies styles to unread messages in ClickUp
+7. **Preview updates instantly, theme and accessibility are preserved**
+
+---
+
+## Accessibility & UX Highlights
+
+- Keyboard navigation and focus rings
+- Accessible labels and input patterns
+- Responsive design for all screen sizes
+- Cancel button logic for color pickers
+- Scroll-down arrow appears when color picker is open and not visible
+
+---
+
+## Screenshots
+
+Below are key screenshots showing the extension in action:
+
+![Main UI - System Theme](./screenshots/main-system-theme.png)
+![Main UI - Custom Colors](./screenshots/main-custom-colors.png)
+![Color Picker Popup](./screenshots/color-picker-popup.png)
+![Main UI - Light Theme](./screenshots/main-light-theme.png)
