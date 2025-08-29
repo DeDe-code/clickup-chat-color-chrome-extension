@@ -167,13 +167,3 @@ npm run lint
 7. **Preview updates instantly, theme and accessibility are preserved**
 
 ---
-
-## Accessibility & UX Highlights
-
-- Keyboard navigation and focus rings
-- Accessible labels and input patterns
-- Responsive design for all screen sizes
-- Cancel button logic for color pickers
-- Scroll-down arrow appears when color picker is open and not visible
-
----

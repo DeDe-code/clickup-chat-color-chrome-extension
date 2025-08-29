@@ -48,7 +48,7 @@ chrome.storage.local.get(['cuBackgroundPrimary', 'cuContentPrimary'], (result) =
   if (result.cuContentPrimary) cuContentPrimary.value = result.cuContentPrimary
 })
 
-// --- MutationObserver for Cancel Button Injection ---
+// --- MutationObserver for Exit Button Injection ---
 const bodyRef = ref(null)
 onMounted(() => {
   bodyRef.value = document.body
@@ -60,7 +60,7 @@ useMutationObserver(bodyRef, () => {
       const btn = document.createElement('button')
       btn.className = 'color-input__popup-cancel-btn'
       btn.type = 'button'
-      btn.textContent = 'Cancel'
+      btn.textContent = 'Exit'
       btn.onclick = (e) => {
         e.stopPropagation()
         const closeBtn = popup.querySelector('.color-input__close, .v-color-input__close')
