@@ -1,7 +1,6 @@
 <script setup>
 /* global chrome */
-import { ref, onMounted, computed, watch } from 'vue'
-import { storeToRefs } from 'pinia'
+import { ref, onMounted, watch } from 'vue'
 import { useColorStore } from '../stores/ColorStore.js'
 import { useTheme } from '../composables/useTheme.js'
 import { useChromeStorage } from '../composables/useChromeStorage.js'
@@ -10,9 +9,9 @@ import ColorManager from '../components/ColorManager.vue'
 import ColorPreview from '../components/ColorPreview.vue'
 import ThemeSelector from '../components/ThemeSelector.vue'
 import ResetButton from '../components/ResetButton.vue'
+import OnboardingModal from '../components/OnboardingModal.vue'
 
 const colorStore = useColorStore()
-const { backgroundColor, textColor } = storeToRefs(colorStore)
 
 const isReady = ref(false)
 const cuContentPrimary = ref('#2097f3')
@@ -163,6 +162,19 @@ const handleReset = () => {
 }
 
 const DEFAULT_THEME = 'system'
+
+// Onboarding modal logic
+const showOnboarding = ref(false)
+onMounted(() => {
+  // Show onboarding if not dismissed before
+  chrome.storage.local.get(['onboardingDismissed'], (result) => {
+    showOnboarding.value = !result.onboardingDismissed
+  })
+})
+function handleOnboardingClose() {
+  showOnboarding.value = false
+  chrome.storage.local.set({ onboardingDismissed: true })
+}
 </script>
 
 <template>
@@ -178,6 +190,7 @@ const DEFAULT_THEME = 'system'
     <div v-else class="loading-wrapper flex items-center justify-center h-32 text-lg font-semibold">
       loading...
     </div>
+    <OnboardingModal v-if="showOnboarding" @close="handleOnboardingClose" />
   </main>
 </template>
 

@@ -36,8 +36,8 @@ function handlePopoverClose() {
 </script>
 
 <template>
-  <div class="color-picker-wrapper">
-    <label :for="id">{{ label }}</label>
+  <div class="color-picker-wrapper" role="group" :aria-labelledby="id + '-label'">
+    <label :id="id + '-label'" :for="id">{{ label }}</label>
     <ColorInput
       :id="id"
       :modelValue="modelValue"
@@ -47,6 +47,7 @@ function handlePopoverClose() {
       :custom-class="customClass"
       @popover-open="handlePopoverOpen"
       @popover-close="handlePopoverClose"
+      aria-label="Pick a color for {{ label }}"
     />
   </div>
 </template>

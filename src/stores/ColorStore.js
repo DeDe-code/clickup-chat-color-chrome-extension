@@ -2,9 +2,18 @@
 import { defineStore } from 'pinia'
 
 export const useColorStore = defineStore('ColorStore', {
+  /**
+   * Store state for color management.
+   *
+   * backgroundColor: Uses ClickUp's main theme variable. Do not change this default unless user overrides.
+   * textColor: Uses ClickUp's main text color variable. Do not change this default unless user overrides.
+   * These variables automatically adapt to dark, light, and system themes.
+   *
+   * Fallbacks are handled in the UI and style logic, not here, to preserve theme integrity.
+   */
   state: () => ({
-    backgroundColor: 'var(--cu-background-primary)',
-    textColor: 'var(--cu-content-primary)',
+    backgroundColor: 'var(--cu-background-primary)', // Critical: do not replace, theme-driven
+    textColor: 'var(--cu-content-primary)', // Critical: do not replace, theme-driven
     useClickUpTextColor: true,
     useClickUpBackgroundColor: true,
   }),
@@ -37,6 +46,10 @@ export const useColorStore = defineStore('ColorStore', {
       }
     },
 
+    /**
+     * Set custom colors. If a value is a CSS variable, ensure it resolves in the UI logic with a fallback.
+     * This preserves theme support and accessibility.
+     */
     setColors(newBackgroundColor, newTextColor) {
       this.backgroundColor = newBackgroundColor
       this.textColor = newTextColor

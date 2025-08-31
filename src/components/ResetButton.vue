@@ -1,5 +1,11 @@
 <template>
-  <button class="reset-default-btn" @click="$emit('click')">
+  <button
+    class="reset-default-btn"
+    @click="$emit('click')"
+    role="button"
+    aria-label="Reset to default colors"
+    title="Reset all colors to their default values"
+  >
     <slot>Reset Default Colors</slot>
   </button>
 </template>

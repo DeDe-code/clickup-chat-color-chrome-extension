@@ -1,3 +1,15 @@
+// -------------------------------------------------------------
+// ClickUp Extender Content Script
+// -------------------------------------------------------------
+// Highlights unread chat channels in ClickUp using custom colors.
+// Uses Chrome storage to persist color settings and observes DOM changes
+// to keep styles in sync with the app's theme and user preferences.
+//
+// CSS Variables Used:
+//   --cu-background-primary: Main background color for ClickUp theme
+//   --cu-content-primary: Main text color for ClickUp theme
+// These are resolved and applied to chat channel elements with unread messages.
+// -------------------------------------------------------------
 /* global chrome */
 
 // ✅ Safeguard: Exit if not on ClickUp
@@ -7,128 +19,9 @@ if (location.hostname !== 'app.clickup.com') {
 
 // Prevent multiple injections by checking if already initialized
 if (window.clickupHighlighterInitialized) {
-  console.log('ClickUp Extender already initialized')
+  // Already initialized
 } else {
   window.clickupHighlighterInitialized = true
-  console.log('🚀 ClickUp Extender initializing...')
-  console.log('Current URL:', window.location.href)
-  console.log('User agent:', navigator.userAgent)
-  console.log('Document ready state:', document.readyState)
-
-  // Uncomment the following block for development/debug only:
-  // const DEBUG = false;
-  // if (DEBUG) {
-  //   function createTestElement() {
-  //     const testDiv = document.createElement('div')
-  //     testDiv.id = 'clickup-highlighter-test'
-  //     testDiv.style.cssText = `
-  //       position: fixed;
-  //       top: 10px;
-  //       right: 10px;
-  //       background: #ff0000;
-  //       color: #ffffff;
-  //       padding: 10px;
-  //       border-radius: 5px;
-  //       z-index: 999999;
-  //       font-family: Arial;
-  //       font-size: 14px;
-  //       font-weight: bold;
-  //       border: 2px solid #ffffff;
-  //     `
-  //     testDiv.textContent = '🔥 ClickUp Extender LOADED!'
-  //     document.body.appendChild(testDiv)
-  //     setTimeout(() => { testDiv.remove() }, 5000)
-  //     console.log('🔥 Test element created and will be visible for 5 seconds')
-  //   }
-  //   createTestElement();
-  //   document.addEventListener('keydown', function (event) {
-  //     if (event.ctrlKey && event.shiftKey && event.key === 'H') {
-  //       console.log('🔥 Manual highlight test triggered!')
-  //       const testStyle = document.createElement('style')
-  //       testStyle.id = 'manual-test-style'
-  //       testStyle.textContent = `
-  //         [class*="channel"],
-  //         [class*="chat"],
-  //         [class*="conversation"],
-  //         .cu-sidebar-nav-item,
-  //         .cu-sidebar-nav-list-item,
-  //         [class*="sidebar"][class*="nav"],
-  //         [data-test*="channel"],
-  //         [data-test*="chat"],
-  //         [class*="unread"],
-  //         [class*="notification"] {
-  //           background-color: #ff00ff !important;
-  //           color: #00ff00 !important;
-  //           border: 3px solid #ffff00 !important;
-  //           animation: pulse 1s infinite !important;
-  //         }
-  //         @keyframes pulse {
-  //           0% { opacity: 1; }
-  //           50% { opacity: 0.5; }
-  //           100% { opacity: 1; }
-  //         }
-  //       `;
-  //       const existing = document.getElementById('manual-test-style')
-  //       if (existing) existing.remove()
-  //       document.head.appendChild(testStyle)
-  //       console.log('🎨 Manual test style applied! Check for bright pink/green chat channel elements.')
-  //       setTimeout(() => { testStyle.remove(); console.log('🔥 Manual test style removed') }, 10000)
-  //     }
-  //   });
-  //   console.log('💡 Tip: Press Ctrl+Shift+H on ClickUp to manually test highlighting')
-  // }
-
-  // Add debugging function to understand ClickUp's DOM structure
-  function debugClickUpStructure() {
-    console.log('=== ClickUp DOM Debug ===')
-
-    // Look for chat channel specific patterns
-    const possibleUnreadSelectors = [
-      '[class*="channel"].has-unread',
-      '[class*="chat"].has-unread',
-      '[class*="conversation"].has-unread',
-      '.cu-sidebar-nav-item.has-unread',
-      '.cu-sidebar-nav-list-item.has-unread',
-      '[class*="sidebar"][class*="nav"].has-unread',
-      '[data-test*="channel"].has-unread',
-      '[data-test*="chat"].has-unread',
-      // General patterns for discovery
-      '.has-unread',
-      '[class*="unread"]',
-      '[class*="notification"]',
-      '[class*="channel"]',
-      '[class*="chat"]',
-      '[class*="conversation"]',
-      '.cu-sidebar-nav-item',
-      '.cu-sidebar-nav-list-item',
-    ]
-
-    possibleUnreadSelectors.forEach((selector) => {
-      const elements = document.querySelectorAll(selector)
-      if (elements.length > 0) {
-        console.log(`Found ${elements.length} elements for selector: ${selector}`)
-        elements.forEach((el, index) => {
-          if (index < 3) {
-            // Show first 3 matches
-            console.log(`  - Element ${index + 1}:`, el.className, el)
-          }
-        })
-      }
-    })
-
-    // Look for any elements with "unread", "channel", "chat" in their classes
-    const allElements = document.querySelectorAll(
-      '*[class*="unread"], *[class*="notification"], *[class*="channel"], *[class*="chat"]',
-    )
-    console.log(
-      `Total elements with 'unread', 'notification', 'channel', or 'chat' in class: ${allElements.length}`,
-    )
-
-    console.log('=== End ClickUp DOM Debug ===')
-  }
-
-  // Run debug after a short delay to let ClickUp load
-  setTimeout(debugClickUpStructure, 2000)
 
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -145,19 +38,35 @@ if (window.clickupHighlighterInitialized) {
   let currentBorderRadius = '2rem'
 
   // Load saved colors from Chrome storage immediately
-  chrome.storage.local.get(['effectiveBackgroundColor', 'effectiveTextColor'], (result) => {
-    if (result.effectiveBackgroundColor) {
-      currentBackground = result.effectiveBackgroundColor
-    }
-    if (result.effectiveTextColor) {
-      currentText = result.effectiveTextColor
-    }
-
-    // Apply styles immediately after loading from storage
-    applyStandardUnreadStyles(currentBackground, currentText)
-  })
+  try {
+    chrome.storage.local.get(['effectiveBackgroundColor', 'effectiveTextColor'], (result) => {
+      if (chrome.runtime.lastError) {
+        alert('Error loading colors from storage: ' + chrome.runtime.lastError.message)
+        return
+      }
+      if (result.effectiveBackgroundColor) {
+        currentBackground = result.effectiveBackgroundColor
+      }
+      if (result.effectiveTextColor) {
+        currentText = result.effectiveTextColor
+      }
+      // Apply styles immediately after loading from storage
+      try {
+        applyStandardUnreadStyles(currentBackground, currentText)
+      } catch (err) {
+        alert('Error applying styles: ' + err.message)
+      }
+    })
+  } catch (err) {
+    alert('Error accessing Chrome storage: ' + err.message)
+  }
 
   // Helper: resolve CSS variable to actual color value
+  /**
+   * Resolves a CSS variable (e.g., 'var(--cu-background-primary)') to its actual value.
+   * @param {string} value - CSS variable or color string
+   * @returns {string} - Resolved color value
+   */
   function resolveCssVar(value) {
     if (typeof value === 'string' && value.startsWith('var(')) {
       const varName = value.match(/var\((--[^)]+)\)/)
@@ -171,14 +80,24 @@ if (window.clickupHighlighterInitialized) {
   }
 
   // Create and inject CSS styles instead of applying inline styles
+  /**
+   * Creates and injects a <style> element targeting unread chat channels.
+   * Uses resolved background and text colors from CSS variables or user settings.
+   * @param {string} bg - Background color
+   * @param {string} txt - Text color
+   */
   function createTargetedStyles(bg = currentBackground, txt = currentText) {
     // Always resolve CSS variables to actual color values
     const resolvedBg = resolveCssVar(bg)
     const resolvedTxt = resolveCssVar(txt)
     // Remove existing style element if it exists
-    const existingStyle = document.getElementById('clickup-highlighter-styles')
-    if (existingStyle) {
-      existingStyle.remove()
+    try {
+      const existingStyle = document.getElementById('clickup-highlighter-styles')
+      if (existingStyle) {
+        existingStyle.remove()
+      }
+    } catch (err) {
+      alert('Error removing existing style: ' + err.message)
     }
 
     // Create new style element with targeted CSS
@@ -256,12 +175,21 @@ if (window.clickupHighlighterInitialized) {
     `
 
     // Inject the style into the document head
-    document.head.appendChild(styleElement)
+    try {
+      document.head.appendChild(styleElement)
+    } catch (err) {
+      alert('Error injecting style element: ' + err.message)
+    }
 
     console.log(`ClickUp Extender: Applied enhanced CSS styles - BG: ${bg}, Text: ${txt}`)
     console.log('Style element injected:', styleElement)
   }
 
+  /**
+   * Applies enhanced CSS styles to unread chat channels using createTargetedStyles.
+   * @param {string} bg - Background color
+   * @param {string} txt - Text color
+   */
   function applyStandardUnreadStyles(bg = currentBackground, txt = currentText) {
     // Use the new targeted CSS approach instead of inline styles
     createTargetedStyles(bg, txt)
@@ -298,6 +226,10 @@ if (window.clickupHighlighterInitialized) {
     }, 1000)
   }
 
+  /**
+   * Finds the first DOM element that defines ClickUp theme CSS variables.
+   * @returns {Element} - Element with theme variables or document root
+   */
   function findClickUpCssVarElement() {
     // Search for the first element that defines either variable
     return (
@@ -310,6 +242,9 @@ if (window.clickupHighlighterInitialized) {
   }
 
   // ✅ Save ClickUp CSS variable values to chrome.storage
+  /**
+   * Saves current ClickUp theme CSS variable values to Chrome storage.
+   */
   function saveClickUpCssVars() {
     const el = findClickUpCssVarElement()
     const cuContentPrimary = getComputedStyle(el).getPropertyValue('--cu-content-primary').trim()
@@ -327,9 +262,15 @@ if (window.clickupHighlighterInitialized) {
   // Save on initial load
   saveClickUpCssVars()
 
-  // Enhanced: Observe the entire DOM for changes to style/class attributes to catch theme changes in real time
+  // Enhanced: Observe only the element that defines theme variables for changes
   let lastCuContentPrimary = ''
   let lastCuBackgroundPrimary = ''
+  let cuVarObserver = null
+  let observedElement = null
+  /**
+   * Observes DOM for theme changes and updates stored CSS variable values if changed.
+   * Debounced to avoid excessive DOM writes.
+   */
   function saveClickUpCssVarsIfChanged() {
     const el = findClickUpCssVarElement()
     const cuContentPrimary = getComputedStyle(el).getPropertyValue('--cu-content-primary').trim()
@@ -347,53 +288,94 @@ if (window.clickupHighlighterInitialized) {
     }
   }
 
+  // Debounce theme variable save
+  const debouncedSaveClickUpCssVarsIfChanged = debounce(saveClickUpCssVarsIfChanged, 200)
+
   // Initial save
   saveClickUpCssVarsIfChanged()
 
-  // Observe all elements for style/class changes
-  const cuVarObserver = new MutationObserver(() => {
-    saveClickUpCssVarsIfChanged()
+  // Observe only the element that defines theme variables for style/class changes
+  function setupCuVarObserver() {
+    if (cuVarObserver) {
+      cuVarObserver.disconnect()
+      cuVarObserver = null
+    }
+    observedElement = findClickUpCssVarElement()
+    cuVarObserver = new MutationObserver(() => {
+      debouncedSaveClickUpCssVarsIfChanged()
+    })
+    cuVarObserver.observe(observedElement, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+      subtree: false,
+    })
+  }
+
+  setupCuVarObserver()
+
+  // Disconnect observer when window is hidden or unloaded
+  window.addEventListener('beforeunload', () => {
+    if (cuVarObserver) cuVarObserver.disconnect()
   })
-  cuVarObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['style', 'class'],
-    subtree: true,
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && cuVarObserver) cuVarObserver.disconnect()
+    else if (!document.hidden) setupCuVarObserver()
   })
 
   // ✅ Initial load
   chrome.storage.local.get(['backgroundColor', 'textColor'], (result) => {
     currentBackground = result.backgroundColor || currentBackground
     currentText = result.textColor || currentText
-    applyStandardUnreadStyles(currentBackground, currentText)
+    try {
+      applyStandardUnreadStyles(currentBackground, currentText)
+    } catch (err) {
+      alert('Error applying initial styles: ' + err.message)
+    }
   })
 
   // ✅ Listen for color changes from popup
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local') {
-      currentBackground = changes.backgroundColor?.newValue || currentBackground
-      currentText = changes.textColor?.newValue || currentText
-      applyStandardUnreadStyles(currentBackground, currentText)
+      try {
+        currentBackground = changes.backgroundColor?.newValue || currentBackground
+        currentText = changes.textColor?.newValue || currentText
+        applyStandardUnreadStyles(currentBackground, currentText)
+      } catch (err) {
+        alert('Error applying changed colors: ' + err.message)
+      }
     }
   })
 
   // ✅ Listen for direct messages from the popup
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('Content script received message:', message)
-
-    if (message.action === 'updateColors') {
-      currentBackground = message.backgroundColor || currentBackground
-      currentText = message.textColor || currentText
-
-      // Immediately apply the new styles
-      applyStandardUnreadStyles(currentBackground, currentText)
-
-      // Send confirmation back to popup
-      sendResponse({ success: true, message: 'Colors updated successfully' })
-      return true // Keep the message channel open for the async response
+    try {
+      if (message.action === 'updateColors') {
+        currentBackground = message.backgroundColor || currentBackground
+        currentText = message.textColor || currentText
+        try {
+          applyStandardUnreadStyles(currentBackground, currentText)
+        } catch (err) {
+          alert('Error applying updated colors: ' + err.message)
+          sendResponse({ success: false, message: 'Failed to update colors' })
+          return true
+        }
+        sendResponse({ success: true, message: 'Colors updated successfully' })
+        return true
+      }
+    } catch (err) {
+      alert('Error handling message: ' + err.message)
+      sendResponse({ success: false, message: 'Error handling message' })
+      return true
     }
   })
 
   // Debounce utility
+  /**
+   * Utility to debounce function calls (e.g., style application after DOM mutations).
+   * @param {Function} fn - Function to debounce
+   * @param {number} delay - Delay in ms
+   * @returns {Function} - Debounced function
+   */
   function debounce(fn, delay) {
     let timer
     return function (...args) {
@@ -404,11 +386,18 @@ if (window.clickupHighlighterInitialized) {
   const applyStylesDebounced = debounce(applyStandardUnreadStyles, 200)
 
   // Find the main chat channel container (update selector as needed)
+  /**
+   * Finds the main chat channel container in ClickUp's sidebar.
+   * @returns {Element|null} - Chat container element or null
+   */
   function getChatContainer() {
     return document.querySelector('.cu-sidebar-nav-list, [class*="chat-list"], [class*="sidebar"]')
   }
 
   // Only observe chat container for mutations
+  /**
+   * Sets up a MutationObserver to reapply styles when chat channels change.
+   */
   function setupChatObserver() {
     const chatContainer = getChatContainer()
     if (!chatContainer) return
@@ -449,12 +438,16 @@ if (window.clickupHighlighterInitialized) {
         applyStylesDebounced()
       }
     })
-    globalObserver.observe(chatContainer, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class'],
-    })
+    try {
+      globalObserver.observe(chatContainer, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class'],
+      })
+    } catch (err) {
+      alert('Error observing chat container mutations: ' + err.message)
+    }
   }
 
   // Setup observer on initial load and after navigation
