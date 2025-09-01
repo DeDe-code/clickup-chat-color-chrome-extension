@@ -3,7 +3,7 @@ import { defineProps, defineEmits } from 'vue'
 import ColorInput from 'vue-color-input'
 import '../assets/vue-color-input.css'
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: String,
     required: true,

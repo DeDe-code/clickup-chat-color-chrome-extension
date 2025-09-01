@@ -1,4 +1,4 @@
-/* global chrome */ /* global chrome */
+/* global chrome */
 
 import { ref, watch, onMounted } from 'vue'
 
