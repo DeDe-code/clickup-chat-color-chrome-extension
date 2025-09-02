@@ -1,7 +1,7 @@
 <script setup>
 /* global chrome */
 import { useColorStore } from '@/stores/ColorStore.js'
-import Checkbox from './Checkbox.vue'
+import CustomCheckbox from './CustomCheckbox.vue'
 const colorStore = useColorStore()
 
 import { ref } from 'vue'
@@ -77,7 +77,7 @@ useMutationObserver(bodyRef, () => {
   <div class="color-manager">
     <div class="clickup-theme-toggle">
       <div class="clickup-text-toggle">
-        <Checkbox
+        <CustomCheckbox
           id="cu-theme"
           :modelValue="colorStore.useClickUpTextColor"
           :label="'Use ClickUp primary content color'"
@@ -86,7 +86,7 @@ useMutationObserver(bodyRef, () => {
         />
       </div>
       <div class="clickup-bg-toggle">
-        <Checkbox
+        <CustomCheckbox
           id="cu-bg"
           :modelValue="colorStore.useClickUpBackgroundColor"
           :label="'Use ClickUp primary background color'"

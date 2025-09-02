@@ -1,5 +1,6 @@
 /* global chrome */
 import { defineStore } from 'pinia'
+import { useChromeStorage } from '../composables/useChromeStorage.js'
 
 export const useColorStore = defineStore('ColorStore', {
   /**
@@ -19,30 +20,29 @@ export const useColorStore = defineStore('ColorStore', {
   }),
 
   actions: {
-    initFromStorage() {
-      if (chrome && chrome.storage) {
-        chrome.storage.local.get(
-          [
-            'effectiveBackgroundColor',
-            'effectiveTextColor',
-            'useClickUpTextColor',
-            'useClickUpBackgroundColor',
-          ],
-          (result) => {
-            if (result.effectiveBackgroundColor) {
-              this.backgroundColor = result.effectiveBackgroundColor
-            }
-            if (result.effectiveTextColor) {
-              this.textColor = result.effectiveTextColor
-            }
-            if (typeof result.useClickUpTextColor !== 'undefined') {
-              this.useClickUpTextColor = !!result.useClickUpTextColor
-            }
-            if (typeof result.useClickUpBackgroundColor !== 'undefined') {
-              this.useClickUpBackgroundColor = !!result.useClickUpBackgroundColor
-            }
-          },
-        )
+    async initFromStorage() {
+      const { getStorage } = useChromeStorage()
+      try {
+        const result = await getStorage([
+          'effectiveBackgroundColor',
+          'effectiveTextColor',
+          'useClickUpTextColor',
+          'useClickUpBackgroundColor',
+        ])
+        if (result.effectiveBackgroundColor) {
+          this.backgroundColor = result.effectiveBackgroundColor
+        }
+        if (result.effectiveTextColor) {
+          this.textColor = result.effectiveTextColor
+        }
+        if (typeof result.useClickUpTextColor !== 'undefined') {
+          this.useClickUpTextColor = !!result.useClickUpTextColor
+        }
+        if (typeof result.useClickUpBackgroundColor !== 'undefined') {
+          this.useClickUpBackgroundColor = !!result.useClickUpBackgroundColor
+        }
+      } catch {
+        // Optionally handle error (e.g., log or show notification)
       }
     },
 
@@ -53,30 +53,17 @@ export const useColorStore = defineStore('ColorStore', {
     setColors(newBackgroundColor, newTextColor) {
       this.backgroundColor = newBackgroundColor
       this.textColor = newTextColor
-      if (chrome && chrome.storage) {
-        chrome.storage.local.set({
-          effectiveBackgroundColor: newBackgroundColor,
-          effectiveTextColor: newTextColor,
-        })
-      }
+      // Storage sync should be handled outside the store
     },
 
     setUseClickUpTextColor(value) {
       this.useClickUpTextColor = value
-      if (chrome && chrome.storage) {
-        chrome.storage.local.set({
-          useClickUpTextColor: value,
-        })
-      }
+      // Storage sync should be handled outside the store
     },
 
     setUseClickUpBackgroundColor(value) {
       this.useClickUpBackgroundColor = value
-      if (chrome && chrome.storage) {
-        chrome.storage.local.set({
-          useClickUpBackgroundColor: value,
-        })
-      }
+      // Storage sync should be handled outside the store
     },
   },
 })
