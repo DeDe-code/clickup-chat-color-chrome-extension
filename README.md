@@ -1,5 +1,46 @@
 # ClickUp Chat Channel Color Extension
 
+## Setup & Installation
+
+1. **Clone the repository:**
+   ```sh
+   git clone https://github.com/DeDe-code/clickup-chat-color-chrome-extension.git
+   cd clickup-chat-color-chrome-extension
+   ```
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+3. **Build the extension:**
+   ```sh
+   npm run build:ext
+   ```
+   This will generate the extension package in the `web-ext-artifacts/` folder.
+4. **Load the extension in Chrome:**
+   - Open Chrome and go to `chrome://extensions`
+   - Enable "Developer mode" (top right)
+   - Click "Load unpacked"
+   - Select the `dist/` folder inside the project directory
+   - The extension should now appear in your extensions list
+
+## Usage Walkthrough
+
+1. **Open ClickUp in your browser** (app.clickup.com)
+2. **Click the extension icon** in the Chrome toolbar to open the popup
+3. **Select your preferred theme** (light, dark, or system)
+4. **Customize chat channel colors:**
+   - Use the checkboxes to toggle between ClickUp default colors and custom colors
+   - Click the color pickers to choose your own background and text colors for unread messages
+   - Preview updates instantly in the popup
+5. **Reset to defaults:**
+   - Click the "Reset Default Colors" button to restore ClickUp's original theme colors
+6. **Changes are applied instantly** to unread chat channels in ClickUp
+7. **Accessibility:**
+   - All controls are keyboard accessible
+   - Focus rings and ARIA labels are provided for usability
+
+---
+
 ![Main UI - System Theme](./screenshots/main-system-theme.png)
 ![Main UI - Custom Colors](./screenshots/main-custom-colors.png)
 ![Color Picker Popup](./screenshots/color-picker-popup.png)

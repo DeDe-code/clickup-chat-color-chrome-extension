@@ -1,3 +1,64 @@
+// --- Error notification helper ---
+function showError(message, action = null) {
+  console.error(message)
+  try {
+    let banner = document.getElementById('clickup-extender-error-banner')
+    if (!banner) {
+      banner = document.createElement('div')
+      banner.id = 'clickup-extender-error-banner'
+      banner.style.position = 'fixed'
+      banner.style.bottom = '16px'
+      banner.style.left = '50%'
+      banner.style.transform = 'translateX(-50%)'
+      banner.style.background = '#e53935'
+      banner.style.color = '#fff'
+      banner.style.padding = '0.75em 1.5em'
+      banner.style.borderRadius = '8px'
+      banner.style.zIndex = '99999'
+      banner.style.fontSize = '1rem'
+      banner.style.boxShadow = '0 2px 8px rgba(0,0,0,0.18)'
+      banner.style.maxWidth = '90vw'
+      banner.style.textAlign = 'center'
+      banner.style.display = 'flex'
+      banner.style.alignItems = 'center'
+      banner.style.gap = '1em'
+      document.body.appendChild(banner)
+    }
+    banner.innerHTML = `<span>${message}</span>`
+    if (action) {
+      let actionBtn = document.createElement('button')
+      actionBtn.textContent = action.label
+      actionBtn.style.marginLeft = '1em'
+      actionBtn.style.background = '#fff'
+      actionBtn.style.color = '#e53935'
+      actionBtn.style.border = 'none'
+      actionBtn.style.borderRadius = '4px'
+      actionBtn.style.padding = '0.3em 0.8em'
+      actionBtn.style.cursor = 'pointer'
+      actionBtn.onclick = action.handler
+      banner.appendChild(actionBtn)
+    }
+    let closeBtn = document.createElement('button')
+    closeBtn.textContent = '×'
+    closeBtn.setAttribute('aria-label', 'Dismiss error')
+    closeBtn.style.marginLeft = '1em'
+    closeBtn.style.background = 'transparent'
+    closeBtn.style.color = '#fff'
+    closeBtn.style.border = 'none'
+    closeBtn.style.fontSize = '1.2em'
+    closeBtn.style.cursor = 'pointer'
+    closeBtn.onclick = () => {
+      banner.style.display = 'none'
+    }
+    banner.appendChild(closeBtn)
+    banner.style.display = 'flex'
+    setTimeout(() => {
+      banner.style.display = 'none'
+    }, 8000)
+  } catch (e) {
+    console.error('Failed to show error banner:', e)
+  }
+}
 // -------------------------------------------------------------
 // ClickUp Extender Content Script
 // -------------------------------------------------------------
@@ -40,10 +101,6 @@ if (window.clickupHighlighterInitialized) {
   // Load saved colors from Chrome storage immediately
   try {
     chrome.storage.local.get(['effectiveBackgroundColor', 'effectiveTextColor'], (result) => {
-      if (chrome.runtime.lastError) {
-        alert('Error loading colors from storage: ' + chrome.runtime.lastError.message)
-        return
-      }
       if (result.effectiveBackgroundColor) {
         currentBackground = result.effectiveBackgroundColor
       }
@@ -53,12 +110,12 @@ if (window.clickupHighlighterInitialized) {
       // Apply styles immediately after loading from storage
       try {
         applyStandardUnreadStyles(currentBackground, currentText)
-      } catch (err) {
-        alert('Error applying styles: ' + err.message)
+      } catch {
+        showError('Failed to apply styles. Try reloading the extension.')
       }
     })
-  } catch (err) {
-    alert('Error accessing Chrome storage: ' + err.message)
+  } catch {
+    showError('Failed to access Chrome storage. Please check your browser settings.')
   }
 
   // Helper: resolve CSS variable to actual color value
@@ -96,8 +153,8 @@ if (window.clickupHighlighterInitialized) {
       if (existingStyle) {
         existingStyle.remove()
       }
-    } catch (err) {
-      alert('Error removing existing style: ' + err.message)
+    } catch {
+      showError('Failed to remove existing style. Try reloading the extension.')
     }
 
     // Create new style element with targeted CSS
@@ -177,8 +234,8 @@ if (window.clickupHighlighterInitialized) {
     // Inject the style into the document head
     try {
       document.head.appendChild(styleElement)
-    } catch (err) {
-      alert('Error injecting style element: ' + err.message)
+    } catch {
+      showError('Failed to inject style element. Try reloading the extension.')
     }
 
     console.log(`ClickUp Extender: Applied enhanced CSS styles - BG: ${bg}, Text: ${txt}`)
@@ -328,8 +385,8 @@ if (window.clickupHighlighterInitialized) {
     currentText = result.textColor || currentText
     try {
       applyStandardUnreadStyles(currentBackground, currentText)
-    } catch (err) {
-      alert('Error applying initial styles: ' + err.message)
+    } catch {
+      showError('Failed to apply initial styles. Try reloading the extension.')
     }
   })
 
@@ -340,8 +397,8 @@ if (window.clickupHighlighterInitialized) {
         currentBackground = changes.backgroundColor?.newValue || currentBackground
         currentText = changes.textColor?.newValue || currentText
         applyStandardUnreadStyles(currentBackground, currentText)
-      } catch (err) {
-        alert('Error applying changed colors: ' + err.message)
+      } catch {
+        showError('Failed to apply changed colors. Try reloading the extension.')
       }
     }
   })
@@ -354,16 +411,16 @@ if (window.clickupHighlighterInitialized) {
         currentText = message.textColor || currentText
         try {
           applyStandardUnreadStyles(currentBackground, currentText)
-        } catch (err) {
-          alert('Error applying updated colors: ' + err.message)
+        } catch {
+          showError('Failed to apply updated colors. Try reloading the extension.')
           sendResponse({ success: false, message: 'Failed to update colors' })
           return true
         }
         sendResponse({ success: true, message: 'Colors updated successfully' })
         return true
       }
-    } catch (err) {
-      alert('Error handling message: ' + err.message)
+    } catch {
+      showError('Error handling message. Try reloading the extension.')
       sendResponse({ success: false, message: 'Error handling message' })
       return true
     }
@@ -445,8 +502,8 @@ if (window.clickupHighlighterInitialized) {
         attributes: true,
         attributeFilter: ['class'],
       })
-    } catch (err) {
-      alert('Error observing chat container mutations: ' + err.message)
+    } catch {
+      showError('Failed to observe chat container changes. Try reloading the extension.')
     }
   }
 

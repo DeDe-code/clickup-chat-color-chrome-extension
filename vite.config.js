@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url'
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -7,6 +8,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import compressionPlugin from 'vite-plugin-compression'
 
 // https://vite.dev/config/
+
 export default defineConfig(({ mode }) => {
   const plugins = [vue(), vueDevTools()]
 
@@ -37,14 +39,17 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
+        'vue-color-input/dist/entry.css': fileURLToPath(
+          new URL('./__mocks__/empty.css', import.meta.url),
+        ),
       },
     },
     build: {
       rollupOptions: {
         input: {
-          popup: resolve('index.html'),
-          content: resolve('src/content/content.js'),
-          background: resolve('src/background/background.js'),
+          popup: resolve(__dirname, 'index.html'),
+          content: resolve(__dirname, 'src/content/content.js'),
+          background: resolve(__dirname, 'src/background/background.js'),
         },
         output: {
           entryFileNames: '[name].js', // No hash for entry files
@@ -70,6 +75,18 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       hmr: true,
+    },
+    test: {
+      environment: 'jsdom',
+      mockReset: true,
+      setupFiles: ['./vitest.setup.js'],
+      css: false, // This will stub CSS imports in tests
+      globals: true,
+      alias: {
+        'vue-color-input/dist/entry.css': fileURLToPath(
+          new URL('./__mocks__/empty.css', import.meta.url),
+        ),
+      },
     },
   }
 })

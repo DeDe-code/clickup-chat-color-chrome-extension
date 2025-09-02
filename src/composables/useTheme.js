@@ -1,5 +1,4 @@
 /* global chrome */
-
 import { ref, watch, onMounted } from 'vue'
 
 export function useTheme() {
