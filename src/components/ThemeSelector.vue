@@ -1,3 +1,14 @@
+<script setup>
+defineProps({
+  modelValue: String,
+})
+const emit = defineEmits(['update:modelValue', 'themeChange'])
+function handleChange(event) {
+  emit('update:modelValue', event.target.value)
+  emit('themeChange', event.target.value)
+}
+</script>
+
 <template>
   <div class="theme-selector-wrapper">
     <label for="theme-select">Appearance</label>
@@ -8,17 +19,6 @@
     </select>
   </div>
 </template>
-
-<script setup>
-import { defineProps, defineEmits } from 'vue'
-defineProps({
-  modelValue: String,
-})
-const emit = defineEmits(['update:modelValue'])
-function handleChange(event) {
-  emit('update:modelValue', event.target.value)
-}
-</script>
 
 <style scoped>
 .theme-selector-wrapper {

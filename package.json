@@ -1,16 +1,20 @@
 {
-  "name": "ClickUp Extender",
+  "name": "clickup-extender",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18.18"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build && node build-utils/post-build.js && node build-utils/copy-content-script.js",
     "preview": "vite preview",
-    "lint:oxlint": "oxlint . --fix -D correctness --ignore-path .gitignore",
-    "lint:eslint": "eslint . --fix",
-    "lint": "run-s lint:*",
-    "format": "prettier --write src/",
+    "lint:oxlint": "oxlint . -D correctness --ignore-path .gitignore",
+    "lint:eslint": "eslint .",
+    "lint:fix": "eslint . --fix && oxlint . --fix -D correctness --ignore-path .gitignore",
+    "lint": "run-s lint:eslint lint:oxlint",
+    "format": "prettier --write .",
     "dev:ext": "rm -rf dist && npm run build && node build-utils/check-content-script.js && npm run dev:watch",
     "dev:watch": "vite build --watch",
     "dev:serve": "sleep 5 && web-ext run --source-dir=./dist --target=chromium --browser-console",
@@ -23,7 +27,11 @@
     "dev:ext:simple:browser": "rm -rf dist && vite build && node build-utils/copy-content-script.js && cp public/manifest.json dist/ && cp public/favicon.ico dist/ && web-ext run --source-dir=./dist --target=chromium --browser-console",
     "build:ext": "npm run build && web-ext build --source-dir=./dist --artifacts-dir=./web-ext-artifacts --overwrite-dest",
     "analyze": "vite build --mode analyze",
-    "test": "vitest"
+    "test": "vitest",
+    "test:run": "vitest run --reporter=dot",
+    "ci:lint": "npm run lint",
+    "ci:test": "npm run test:run",
+    "ci:audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@vueuse/core": "^13.4.0",

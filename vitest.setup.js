@@ -3,3 +3,4 @@
 // Mock CSS imports to avoid errors in Vitest
 // Vitest setup file. Add global mocks or setup code here if needed.
 // vitest.setup.js
+export {}
