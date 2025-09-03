@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
-import UmcExtentionView from './views/UmcExtentionView.vue'
+import UmcExtensionView from './views/UmcExtensionView.vue'
 import '@/assets/fonts.css'
 import '@/assets/base.css'
 
@@ -12,6 +12,6 @@ onMounted(() => {
 
 <template>
   <main>
-    <UmcExtentionView />
+    <UmcExtensionView />
   </main>
 </template>
