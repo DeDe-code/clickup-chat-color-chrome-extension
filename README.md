@@ -41,6 +41,7 @@
 
 ---
 
+![Welcome screen of ClickUp Chat Color extension](./screenshots/welcome-screen.png)
 ![Main UI - System Theme](./screenshots/main-system-theme.png)
 ![Main UI - Custom Colors](./screenshots/main-custom-colors.png)
 ![Color Picker Popup](./screenshots/color-picker-popup.png)
